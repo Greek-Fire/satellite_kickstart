@@ -16,7 +16,7 @@ rm -rf /etc/yum.repos.d/*
 cat > /etc/yum.repos.d/ol7.repo <<EOF
 [ol7]
 name=ol7
-baseurl=http://{{ ansible_fqdn }}/pulp/content/{{ satellite_organization }}/Library/custom/OEL-KS/OEL79-KS/
+baseurl=http://{{ ansible_fqdn }}/pulp/content/{{ satellite_organization }}/Library/library/content/dist//OEL-KS/OEL79-KS/
 EOF
 <% end -%>
 

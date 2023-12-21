@@ -49,7 +49,7 @@ satellite_hostgroups:
   kickstart_repository: Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.9
   parameters:
   - name: packages
-    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
   - name: disa_stig
     value: True
 - name: RH8-Template-Maker
@@ -86,7 +86,7 @@ satellite_hostgroups:
   #- name: skip_packages
   #  value: rhn*
   - name: packages
-    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
   - name: disa_stig
     value: True
 - name: OL6-Template-Maker
