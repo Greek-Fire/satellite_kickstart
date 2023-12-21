@@ -1,0 +1,7 @@
+- ansible.posix.mount:
+    path: "{{ item.mount_path }}"
+    src: "{{ item.iso_location }}"
+    state: unmounted
+- file:
+    path: "{{ item.mount_path }}"
+    state: absent

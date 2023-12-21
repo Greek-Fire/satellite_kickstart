@@ -1,0 +1,9 @@
+# This was done to avoid passwork leak
+satellite_compute_resources:
+  name: "VMware"
+  provider: "vmware"
+  provider_params:
+    url: "vcenter.lou.land"
+    user: "administrator@lou.land"
+    password: "redhat"
+    datacenter: "TNDC"

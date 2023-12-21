@@ -1,0 +1,12 @@
+<%#
+kind: snippet
+name: Compliance Kickstart default custom skip packages
+model: ProvisioningTemplate
+description: |
+  Script used to add custom packages
+-%>
+<% if host_param('skip_packages') -%>
+<%- host_param('skip_packages').split(',').each do |package| -%>
+-<%= package.strip %>
+<% end -%>
+<% end -%>

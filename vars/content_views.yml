@@ -1,0 +1,25 @@
+satellite_content_views:
+- name: OEL-KS
+  repositories:
+  - name: OEL87-KS
+    product: OEL-KS
+  - name: OEL79-KS
+    product: OEL-KS
+  - name: OEL69-KS
+    product: OEL-KS
+  - name: OEL-SUBMAN
+    product: OEL-KS
+- name: RHEL-KS
+  repositories:
+  - name: 'Red Hat Enterprise Linux 8 for x86_64 - AppStream Kickstart 8.8'
+    product: 'Red Hat Enterprise Linux for x86_64'
+  - name: 'Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8'
+    product: 'Red Hat Enterprise Linux for x86_64'
+  - name: 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.9'
+    product: 'Red Hat Enterprise Linux Server'
+- name: kickstart
+  components:
+  - content_view: OEL-KS
+    latest: true
+  - content_view: RHEL-KS
+    latest: true

@@ -1,0 +1,14 @@
+---
+- name: 'Create Compute Resources'  # noqa: args[module]
+  redhat.satellite.compute_resource:
+    username: "{{ satellite_username | default(omit) }}"
+    password: "{{ satellite_password | default(omit) }}"
+    server_url: "{{ satellite_server_url | default(omit) }}"
+    validate_certs: "{{ satellite_validate_certs | default(omit) }}"
+    name: "{{ satellite_compute_resources.name }}"
+    description: "{{ satellite_compute_resources.description | default(omit) }}"
+    organizations: "{{ satellite_compute_resources.organizations | default(omit) }}"
+    locations: "{{ satellite_compute_resources.locations | default(omit) }}"
+    provider: "{{ satellite_compute_resources.provider | default(omit) }}"
+    provider_params: "{{ satellite_compute_resources.provider_params | default(omit) }}"
+    state: "{{ satellite_compute_resources.state | default('present') }}"

@@ -1,0 +1,8 @@
+- name: add vm template web directory 
+  file:
+    path: "{{ vm_template_web_path }}"
+    state: directory
+    owner: foreman
+    group: foreman
+    mode: 755
+  when: vm_template_web_path 

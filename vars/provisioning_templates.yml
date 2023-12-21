@@ -1,0 +1,53 @@
+satellite_provisioning_templates:
+- name: Compliance Kickstart default custom packages
+  template: "{{ lookup('template', 'compliance_kickstart_default_custom_packages.erb.j2') }}"
+  operatingsystems:
+  - KS-Redhat 7.9
+  - KS-Redhat 8.8
+  - KS-OracleLinux 8.7
+  - KS-OracleLinux 7.9
+  - KS-OracleLinux 6.9
+- name: Compliance Kickstart default
+  template: "{{ lookup('template', 'compliance_kickstart_default.erb.j2') }}"
+  operatingsystems:
+  - KS-Redhat 7.9
+  - KS-Redhat 8.8
+  - KS-OracleLinux 8.7
+  - KS-OracleLinux 7.9
+  - KS-OracleLinux 6.9
+- name: Compliance Kickstart default satellite rex
+  template: "{{ lookup('template', 'compliance_kickstart_default_satellite_rex.erb.j2') }}"
+  operatingsystems:
+  - KS-Redhat 7.9
+  - KS-Redhat 8.8
+  - KS-OracleLinux 8.7
+  - KS-OracleLinux 7.9
+  - KS-OracleLinux 6.9
+- name: Compliance Kickstart default custom post
+  template: "{{ lookup('template', 'compliance_kickstart_default_custom_post.erb.j2') }}"
+  operatingsystems:
+  - KS-Redhat 7.9
+  - KS-Redhat 8.8
+  - KS-OracleLinux 8.7
+  - KS-OracleLinux 7.9
+  - KS-OracleLinux 6.9
+- name: Compliance Kickstart default custom repositories
+  template: "{{ lookup('template', 'compliance_kickstart_default_custom_repositories.erb.j2') }}"
+  operatingsystems:
+  - KS-OracleLinux 8.7
+- name: Compliance Kickstart default custom skip packages
+  template: "{{ lookup('template', 'compliance_kickstart_default_custom_skip_packages.erb.j2') }}"
+  operatingsystems:
+  - KS-Redhat 7.9
+  - KS-Redhat 8.8
+  - KS-OracleLinux 8.7
+  - KS-OracleLinux 7.9
+  - KS-OracleLinux 6.9
+- name: Compliance Kickstart default subscription manager
+  template: "{{ lookup('template', 'compliance_kickstart_defatul_suscription_manager.erb.j2') }}"
+  operatingsystems:
+  - KS-Redhat 7.9
+  - KS-Redhat 8.8
+  - KS-OracleLinux 8.7
+  - KS-OracleLinux 7.9
+  - KS-OracleLinux 6.9

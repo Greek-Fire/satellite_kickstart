@@ -1,0 +1,38 @@
+<%#
+kind: snippet
+name: Compliance Kickstart default subscription manager
+model: ProvisioningTemplate
+description: |
+  Script used to add custom repositories to install subscription-manager
+-%>
+
+<% is_oracle7 = @host.operatingsystem.name == 'KS-OracleLinux' && @host.operatingsystem.major.to_i == 7 -%>
+<% is_oracle8 = @host.operatingsystem.name == 'KS-OracleLinux' && @host.operatingsystem.major.to_i == 8 -%>
+
+rm -rf /etc/yum.repos.d/*
+
+<% if is_oracle7 -%>
+
+cat > /etc/yum.repos.d/ol7.repo <<EOF
+[ol7]
+name=ol7
+baseurl=http://{{ ansible_fqdn }}/pulp/content/{{ satellite_organization }}/Library/custom/OEL-KS/OEL79-KS/
+EOF
+<% end -%>
+
+<% if is_oracle8 -%>
+
+cat > /etc/yum.repos.d/ol8.repo <<EOF
+[ol8-appstream]
+name=ol8
+baseurl=http://{{ ansible_fqdn }}/pulp/content/{{ satellite_organization }}/Library/library/content/dist/rhel8/8.8/x86_64/appstream/kickstart/
+[ol8-baseos]
+name=ol8
+baseurl=http://{{ ansible_fqdn }}/pulp/content/{{ satellite_organization }}/Library/library/content/dist/rhel8/8.8/x86_64/baseos/kickstart/
+EOF
+<% end -%>
+
+yum clean all
+yum remove rhn* -y
+yum install subscription-manager --setopt=obsoletes=0 --nogpgcheck -y
+rm -rf /etc/yum.repos.d/*

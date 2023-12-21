@@ -1,0 +1,38 @@
+---
+- name: Check if the directory is mounted
+  include_tasks: mount_check.yml
+  with_items: "{{ isos_to_mount | default([]) }}"
+
+- name: Create web directories
+  file:
+    path:  "{{ item.web_path }}"
+    state: directory
+    owner: foreman
+    group: foreman
+    mode: 755
+  with_items: "{{ isos_to_mount | default([]) }}"
+
+- name: Synchronize ISO contents to web directory
+  ansible.posix.synchronize:
+    src: "{{ item.mount_path }}/"
+    dest: "{{ item.web_path }}"
+    delete: true
+    recursive: true 
+  with_items: "{{ isos_to_mount | default([]) }}"
+  delegate_to: "{{ ansible_fqdn }}"
+
+- name: OEL6 Quick Fix
+  include_tasks: oel6.yml
+  loop_control:
+    loop_var: isos_to_mount
+  loop: "{{ isos_to_mount | default([]) }}"
+  when: isos_to_mount.oel6 is defined 
+
+- name: generate pulp manifest
+  pulp_manifest:
+    src:  "{{ item.web_path }}"
+    path: "{{ item.web_path }}/PULP_MANIFEST"
+  with_items: "{{ isos_to_mount | default([]) }}"
+
+- include_tasks: umount.yml
+  with_items: "{{ isos_to_mount | default([]) }}"

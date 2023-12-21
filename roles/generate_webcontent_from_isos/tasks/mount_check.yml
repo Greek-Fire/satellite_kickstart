@@ -1,0 +1,35 @@
+---
+#- name: Validate ISO files
+#  stat:
+#    path: "{{ item.iso_location }}"
+#  register: iso_file
+#  failed_when: iso_file.stat.exists == false or iso_file.stat.isdir == true or iso_file.stat.mimetype != 'application/x-iso9660-image'
+
+- name: Check if ISO is mounted
+  ansible.builtin.shell: 
+    cmd: mount | grep -w {{ item.mount_path }} | grep -w iso9660
+  register: mount_check
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Unmount ISO
+  ansible.builtin.command:
+    cmd: umount {{ item.mount_path }}
+  when: mount_check.rc == 0
+
+- name: Create mount directories
+  file:
+    path: "{{ item.mount_path }}"
+    state: directory
+    owner: foreman
+    group: foreman
+    mode: 755
+
+- name: Mount ISO
+  ansible.posix.mount:
+    path: "{{ item.mount_path }}"
+    src: "{{ item.iso_location }}"
+    fstype: iso9660
+    opts: loop
+    state: mounted

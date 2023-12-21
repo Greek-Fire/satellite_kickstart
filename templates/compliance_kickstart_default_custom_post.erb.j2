@@ -1,0 +1,175 @@
+<%#
+kind: snippet
+name: Compliance Kickstart default custom post
+model: ProvisioningTemplate
+description: |
+  Script used to scrub VM to become template
+-%>
+
+cat <<'EOF' >/root/first-boot.sh
+{% raw %}
+#!/bin/bash
+
+# Redirect stdout and stderr to a log file for debugging
+exec > /tmp/first-boot.log 2>&1
+
+# Path to the fstab file
+FSTAB_FILE="/etc/fstab"
+
+# Temporary file to hold the reformatted fstab
+TMP_FSTAB_FILE="/tmp/fstab_formatted"
+
+# Backup original fstab file
+cp "$FSTAB_FILE" "$FSTAB_FILE.bak"
+
+# Function to format and align fstab file
+format_fstab() {
+    # Define arrays to hold the max lengths of each column
+    declare -A max_lengths
+    max_lengths[1]=0
+    max_lengths[2]=0
+    max_lengths[3]=0
+    max_lengths[4]=0
+    max_lengths[5]=0
+    max_lengths[6]=0
+
+    # First pass to find the max length of each column
+    while IFS= read -r line; do
+        # Skip comments and empty lines
+        if [[ "$line" =~ ^#.*$ || -z "$line" ]]; then
+            continue
+        fi
+
+        # Split line into fields
+        read -ra fields <<< "$line"
+
+        # Update max_lengths if current length is longer
+        for i in "${!fields[@]}"; do
+            (( ${#fields[i]} > max_lengths[$((i+1))] )) && max_lengths[$((i+1))]=${#fields[i]}
+        done
+    done < "$FSTAB_FILE"
+
+    # Clear the temporary file
+    > "$TMP_FSTAB_FILE"
+
+    # Second pass to format and align fstab entries based on max lengths
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^#.*$ ]]; then
+            # It's a comment, just write it as it is
+            echo "$line" >> "$TMP_FSTAB_FILE"
+        elif [[ -z "$line" ]]; then
+            # It's an empty line, write it as it is
+            echo >> "$TMP_FSTAB_FILE"
+        else
+            # It's a fstab entry, format it
+            read -ra fields <<< "$line"
+            printf "%-${max_lengths[1]}s %-${max_lengths[2]}s %-${max_lengths[3]}s %-${max_lengths[4]}s %-${max_lengths[5]}s %s\n" "${fields[@]}" >> "$TMP_FSTAB_FILE"
+        fi
+    done < "$FSTAB_FILE"
+
+    # Overwrite the original fstab with the formatted version
+    mv "$TMP_FSTAB_FILE" "$FSTAB_FILE"
+}
+
+# Invoke the format function
+format_fstab
+
+# Stop logging services
+systemctl stop rsyslog
+service auditd stop
+
+# Remove old kernels 
+OS_MAJOR_VERSION=$(source /etc/os-release && echo $VERSION_ID | cut -d. -f1)
+
+if [ "$OS_MAJOR_VERSION" -ge 8 ]; then
+    # For RHEL 8 and above, use dnf
+    dnf remove --oldinstallonly --setopt installonly_limit=2 -y
+    dnf clean all
+    sed -i '/^Ciphers /c\Ciphers aes256-ctr,aes192-ctr,aes128-ctr' /etc/crypto-policies/back-ends/openssh.config
+else
+    # For RHEL 7 and below, use yum and package-cleanup
+    package-cleanup --oldkernels --count=1 -y
+    package-cleanup --cleandupes -y
+    yum clean all
+fi
+
+# Clean out /root
+rm -rf /root/*
+rm -f /root/.bash_history
+
+# Truncate files in /var/log
+find /var/log -type f -exec truncate --size=0 {} \;
+
+# Remove network interface 
+for FILE in /etc/sysconfig/network-scripts/ifcfg-*; do
+    sed -i '/^HWADDR/d' "$FILE"
+    sed -i '/^UUID/d' "$FILE"
+    sed -i '/^IPADDR/d' "$FILE"
+done
+
+# Remove persistent  rules
+rm -f /etc/udev/rules.d/70-persistent-net.rules
+rm -f /etc/udev/rules.d/70-persistent-*.rules
+
+# Unregister the system
+subscription-manager remove --all
+subscription-manager unregister
+subscription-manager clean
+
+# Remove hostname
+truncate -s 0 /etc/hostname
+
+# Clean machine-id
+truncate -s 0 /etc/machine-id
+
+# Clean out /tmp and /var/tmp
+find /tmp -mindepth 1 -delete
+find /var/tmp -mindepth 1 -delete
+
+systemctl disable first-boot.service
+
+rm -f /etc/systemd/system/first-boot.service
+rm -f /root/first-boot.sh
+
+poweroff
+EOF
+
+chmod 645 /root/first-boot.sh
+
+# Create the systemd service file for the first-boot script
+cat <<'EOF' >/etc/systemd/system/first-boot.service
+[Unit]
+Description=Run a script at first boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /root/first-boot.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable the systemd service to run at first boot
+systemctl enable first-boot.service
+{% endraw %}
+
+# Generate a GRUB2 password hash
+
+# GRUB_HASH=$(echo -e "${GRUB_PASS}\n${GRUB_PASS}" | grub2-mkpasswd-pbkdf2 | awk '/PBKDF2/ {print $7}')
+GRUB_ROOT_HASH="<%= host_param('grub_root_hash') %>"
+
+# Check if the system is UEFI-based and update the GRUB configuration accordingly
+if [ -e /sys/firmware/efi ]; then
+    # For UEFI systems, set the GRUB password in the user.cfg file
+    USER_CFG_PATH="/boot/efi/EFI/redhat/user.cfg"
+    echo "GRUB2_PASSWORD=$GRUB_ROOT_HASH" > $USER_CFG_PATH
+    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+else
+    # For BIOS systems, set the GRUB password in the 40_custom file
+    GRUB_CFG_PATH="/etc/grub.d/40_custom"
+    echo "set superusers=\"root\"" > $GRUB_CFG_PATH
+    echo "password_pbkdf2 root $GRUB_ROOT_HASH" >> $GRUB_CFG_PATH
+    grub2-mkconfig -o /boot/grub2/grub.cfg
+fi

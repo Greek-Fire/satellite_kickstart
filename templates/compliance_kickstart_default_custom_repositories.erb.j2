@@ -1,0 +1,12 @@
+<%#
+kind: snippet
+name: Compliance Kickstart default custom repositories
+model: ProvisioningTemplate
+description: |
+  Script used to add custom repositories
+-%>
+<% is_oracle8 = @host.operatingsystem.name == 'KS-OracleLinux' && @host.operatingsystem.major.to_i == 8 -%>
+
+<% if is_oracle8 -%>
+repo --name "OEL8-APP"  --baseurl "http://{{ ansible_fqdn }}/pulp/content/{{ satellite_organization }}/Library/custom/OEL-KS/OEL87-KS/AppStream/"
+<% end -%>

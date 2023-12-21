@@ -1,0 +1,66 @@
+secret_root: redhat88
+grub_root_string: redhat
+# grub_root_hash: "grub.pbkdf2.sha512.10000.93B3F1A33534B08C899994CD3635206D66748943A15B92905C43F0DD5369AC7023D4A8E512CB54DA37138405027946ADD267A4E2BF4B3739617BDB41FEB6732A.EC0895D5D3E53D596951034ECD2CB0F8ADA39E693F7D9A7D82FE5B6AE901B152ED3B02D696B10B3BBB70431C4E3C5F4792B9A6C7C28F7F6A20326D2A16311E5A"
+satellite_location: hallas
+satellite_hostname: satellite.lou.land
+satellite_server_url: https://satellite.lou.land
+satellite_username: admin
+satellite_password: redhat
+satellite_organization:   hallas
+vm_template_web_path: "/var/www/html/pub/vm-templates"
+satellite_validate_certs: "{{ validate_certs | default('true') }}"
+
+satellite_organizations:
+- name: hallas
+  label: hallas
+  state: present
+
+satellite_locations:
+- name: hallas
+  organizations:
+  - hallas
+  state: present
+
+satellite_partition_table:
+- name: Compliance STIG Disk Layout
+  layout: "{{ lookup('template', 'disa_stig_kickstart_disk_layout.erb.j2') }}"
+  os_family: Redhat
+
+isos_to_mount:
+- mount_path: /mnt/OEL87
+  iso_location: /home/OEL87.iso
+  web_path: /var/www/html/pub/OEL87-KS
+- mount_path: /mnt/OEL79
+  iso_location: /var/www/html/pub/OEL79.iso
+  web_path: /var/www/html/pub/OEL79-KS
+- mount_path: /mnt/OEL69
+  iso_location: /var/www/html/pub/OEL69.iso
+  web_path: /var/www/html/pub/OEL69-KS
+  oel6: true
+
+zips_to_unarchive:
+- zip_path: /tmp/subman7.zip
+  unarchive_path: /tmp/subman7
+  web_path: /var/www/html/pub/OEL7-SUBMAN
+- zip_path: /tmp/subman8.zip
+  unarchive_path: /tmp/subman8
+  web_path: /var/www/html/pub/OEL8-SUBMAN
+
+satellite_installation_mediums:
+- name: OracleLinux8.7
+  path: "http://{{ satellite_hostname }}/pulp/content/{{ satellite_organization }}/Library/custom/OEL-KS/OEL87-KS/"
+- name: OracleLinux7.9
+  path: "http://{{ satellite_hostname }}/pulp/content/{{ satellite_organization }}/Library/custom/OEL-KS/OEL79-KS/"
+- name: OracleLinux6.9
+  path: "http://{{ satellite_hostname }}/pulp/content/{{ satellite_organization }}/Library/custom/OEL-KS/OEL69-KS/"
+  
+satellite_repository_sync:
+- product: OEL-KS
+  repository: OEL87-KS
+  organization: "{{ satellite_organization }}"
+- product: OEL-KS
+  repository: OEL79-KS
+  organization: "{{ satellite_organization }}"
+- product: OEL-KS
+  repository:  OEL69-KS
+  organization: "{{ satellite_organization }}"

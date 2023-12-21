@@ -1,0 +1,17 @@
+vcenter_hostname: vcenter.lou.land
+vcenter_username: administrator@lou.land
+vcenter_password: Gr33k*G0d7
+vcenter_validate_certs: False
+content_library:
+- name: 00-main
+  description: automated
+  publish_info:
+    published: true
+    authentication_method: NONE
+  storage_backings:
+  - datastore_id: "datastore-1001"
+    type: DATASTORE
+  state: present
+subscribed_content_library:
+- name: 01-sub
+  description: automated

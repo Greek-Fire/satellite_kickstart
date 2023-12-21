@@ -1,0 +1,51 @@
+<%#
+kind: ptable
+name: DISA STIG Disk Layout
+model: Ptable
+oses:
+- RedHat
+- OracleLinux
+-%>
+zerombr
+clearpart --all --initlabel
+
+<%
+  dev           = host_param('part_device')   || 'sda'
+  fstype        = host_param('part_fstype')   || 'xfs'
+  vgname        = host_param('vg_name')       || "vg_#{dev}"
+  
+  # Set sizes for various volumes, defaults provided
+  root_size          = host_param('root_size')          || '4048'
+  var_size           = host_param('var_size')           || '4096'
+  opt_size           = host_param('opt_size')           || '10240'
+  var_log_size       = host_param('var_log_size')       || '4096'
+  var_log_audit_size = host_param('var_log_audit_size') || '4048'
+  var_tmp_size       = host_param('var_tmp_size')       || '2048'
+  tmp_size           = host_param('tmp_size')           || '2048'
+  home_size          = host_param('home_size')          || '4048'
+  swap_size          = host_param('swap_size')          || '4096' # default 4 GB for swap
+  boot_size          = host_param('boot_size')          || '1024' # default 1 GB for /boot
+  boot_efi_size      = host_param('boot_efi_size')      || '200'  # default 200 MB for /boot/efi
+-%>
+
+<% if @host.pxe_loader.include?('UEFI') -%>
+part /boot/efi --fstype="efi" --ondisk=<%= dev %> --size=<%= boot_efi_size %> --fsoptions="umask=0077,shortname=winnt"
+<% end -%>
+
+part /boot --fstype="<%= fstype %>" --ondisk=<%= dev %> --size=<%= boot_size %>
+part swap  --fstype="swap"          --ondisk=<%= dev %> --size=<%= swap_size %>
+part pv.01 --fstype="lvmpv"         --ondisk=<%= dev %> --size=1 --grow
+volgroup <%= vgname %> pv.01
+
+# Logical volumes
+logvol /              --vgname=<%= vgname %> --name=lv_root          --size=<%= root_size %>          --grow --fstype="<%= fstype %>" --fsoptions="nodev"
+logvol /var           --vgname=<%= vgname %> --name=lv_var           --size=<%= var_size %>           --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
+logvol /opt           --vgname=<%= vgname %> --name=lv_opt           --size=<%= opt_size %>           --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
+logvol /var/log       --vgname=<%= vgname %> --name=lv_var_log       --size=<%= var_log_size %>       --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
+logvol /var/log/audit --vgname=<%= vgname %> --name=lv_var_log_audit --size=<%= var_log_audit_size %> --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
+logvol /var/tmp       --vgname=<%= vgname %> --name=lv_var_tmp       --size=<%= var_tmp_size %>       --fstype="<%= fstype %>" --fsoptions="nodev,nosuid,noexec"
+logvol /tmp           --vgname=<%= vgname %> --name=lv_tmp           --size=<%= tmp_size %>           --fstype="<%= fstype %>" --fsoptions="nodev,nosuid,noexec"
+
+<% if home_size.to_i > 0 -%>
+logvol /home          --vgname=<%= vgname %> --name=lv_home --size=<%= home_size %> --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
+<% end -%>

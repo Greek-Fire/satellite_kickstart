@@ -1,0 +1,32 @@
+---
+- name: Check if the directory is mounted
+  include_tasks: mount_check.yml
+  loop: "{{ isos8_to_mount | default([]) }}"
+
+- name: Create web directories
+  file:
+    path:  "{{ item.0.web_path }}"
+    state: directory
+    owner: foreman
+    group: foreman
+    mode: 755
+  loop: "{{ isos8_to_mount | subelements('web_path', skip_missing=True) }}"
+
+- name: Synchronize ISO contents to web directory
+  ansible.posix.synchronize:
+    src: "{{ item.1.source }}/"
+    dest: "{{ item.1.web_path }}"
+    delete: true
+    recursive: true
+  loop: "{{ isos8_to_mount | subelements('web_path', skip_missing=True) }}"
+  delegate_to: "{{ ansible_hostname }}"
+
+- name: generate pulp manifest
+  pulp_manifest:
+    src:  "{{ item.1 }}"
+    path: "{{ item.1 }}/PULP_MANIFEST"
+    force: true
+  loop: "{{ isos8_to_mount  | subelements('pulp_path', skip_missing=True) }}"
+
+- include_tasks: umount.yml
+  loop: "{{ isos8_to_mount | default([]) }}"

@@ -1,0 +1,8 @@
+- name: create grub2 hash
+  shell: echo -e "{{grub_root_string }}\n{{ grub_root_string }}" | grub2-mkpasswd-pbkdf2 | awk '/PBKDF2/ {print $7}'
+  register: grub_root_hash
+  no_log: true
+
+- set_fact:
+    grub_root_hash: "{{ grub_root_hash['stdout'] }}"
+  no_log: true

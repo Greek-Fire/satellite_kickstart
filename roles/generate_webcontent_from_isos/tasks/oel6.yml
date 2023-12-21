@@ -1,0 +1,26 @@
+- name: Remove symbolic link
+  ansible.builtin.file:
+    path: "{{ isos_to_mount.web_path }}/{{ item }}"
+    state: absent
+  delegate_to: "{{ ansible_hostname }}"
+  with_items:
+  - repodata
+  - UEK4/Packages
+
+- name: Synchronize ISO contents to web directory
+  ansible.posix.synchronize:
+    src: "{{ isos_to_mount.mount_path }}/Server/repodata"
+    dest: "{{ isos_to_mount.web_path }}/"
+    delete: true
+    recursive: true
+  delegate_to: "{{ ansible_hostname }}"
+
+- name: Synchronize ISO contents to web directory
+  ansible.posix.synchronize:
+    src: "{{ isos_to_mount.mount_path }}/{{ item.src }}"
+    dest: "{{ isos_to_mount.web_path }}/{{ item.dest }}"
+    delete: true
+    recursive: true
+  delegate_to: "{{ ansible_hostname }}"
+  loop:
+  - { src: 'Packages', dest: 'UEK4' }

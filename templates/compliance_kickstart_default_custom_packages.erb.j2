@@ -1,0 +1,10 @@
+<%#
+kind: snippet
+name: Compliance Kickstart default custom packages
+model: ProvisioningTemplate
+description: |
+  Script used to add custom packages
+-%>
+<% if host_param('packages') -%>
+<%= host_param('packages').split(',').join("\n") -%>
+<% end -%>

@@ -1,0 +1,92 @@
+- hosts: all
+  gather_facts: 0
+  vars_files:
+  - vars/subnets.yml
+  - vars/main.yml
+  roles:
+  - role: gather_subset
+    tags: gather_subset
+  - role: redhat.satellite.organizations
+    tags: organizations
+  #- role: redhat.satellite.locations
+  #  tags: locations
+  - role: redhat.satellite.subnets
+    tags: subnets
+  - role: redhat.satellite.provisioning_templates
+    tags: provisioning_templates
+    vars:
+      satellite_provisioning_templates:
+      - name: Compliance Kickstart default
+        state:  present
+        template: "{{ lookup('template', 'compliance_kickstart_default.erb.j2') }}"
+
+- hosts: all
+  gather_facts: 0
+  vars_files:
+  - vars/vcenter.yml
+  - vars/hostgroups.yml
+  - vars/main.yml
+  - vars/compute_resources.yml
+  - vars/compute_profiles.yml
+  - vars/content_views.yml
+  - vars/hostgroups.yml
+  - vars/operatingsystems.yml
+  - vars/provisioning_templates.yml
+  - vars/products.yml
+  roles:
+    - role: gather_subset
+      tags: gather_subset
+    - role: partition_tables
+      tags: partition_tables
+    - role: compute_resources
+      tags: compute_resources
+    - role: hash_maker
+      tags: hostgroups
+    - role: redhat.satellite.compute_profiles
+      tags: compute_profiles
+    - role: generate_webcontent_from_isos
+      tags: generate_webcontent_from_isos
+    - role: generate_webcontent_from_zips
+      tags: generate_webcontent_from_zips
+    - role: vm_web_path
+      tags: vm_web_path
+    - role: redhat.satellite.repositories
+      tags: repositories
+    - role: redhat.satellite.provisioning_templates
+      tags: provisioning_templates
+    - role: installation_mediums
+      tags: installation_mediums
+    - role: redhat.satellite.operatingsystems
+      tags: operatingsystems
+    - role: redhat.satellite.hostgroups
+      tags: hostgroups
+    - role: repository_sync
+      tags: repository_sync
+    - role: redhat.satellite.content_views
+      tags: content_views
+    - role: content_libraries
+      tags: content_libraries
+    - role: hosts
+      tags: create_host
+      vars:
+        satellite_hosts:
+        - name: 'autobuildol8.lou.land'
+          hostgroup: 00-Template-Maker/OL8-Template-Maker
+          organization: hallas
+          location: hallas
+          state: present 
+          build: True
+          pxe_loader: Grub2 UEFI
+          provision_method: bootdisk
+          parameters:
+          - name: 'package_update'
+            value: false
+          - name: 'disa_stig'
+            value: false
+          interfaces_attributes:
+          - type: "interface"
+            provision: true
+            primary: true
+            managed: true
+            subnet: "192.168.2.0"
+            ip: "192.168.2.57"

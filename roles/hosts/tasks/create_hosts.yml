@@ -1,0 +1,150 @@
+---
+- name: Create a VMware host in Satellite with EFI firmware and specific provisioning
+  redhat.satellite.host:
+    username: "{{ satellite_username | default(omit) }}"
+    password: "{{ satellite_password | default(omit) }}"
+    server_url: "{{ satellite_server_url | default(omit) }}"
+    validate_certs: "{{ satellite_validate_certs | default(omit) }}"
+    organization: "{{ item.organization | default(omit) }}"
+    location: "{{ item.location | default(omit) }}"
+    name: "{{ item.name }}"
+    hostgroup: "{{ item.hostgroup | default(omit) }}"
+    state: "{{ item.state }}"
+    build: "{{ item.build | default(omit) }}"
+    compute_resource: "{{ item.compute_resource | default(omit) }}"
+    compute_profile: "{{ item.compute_profile | default(omit) }}"
+    compute_attributes: "{{ item.compute_attributes | default(omit) }}"
+    interfaces_attributes: "{{ item.interfaces_attributes | default(omit) }}"
+    pxe_loader: "{{ item.pxe_loader | default(omit) }}"  # Set PXE Loader to Grub2 UEFI
+    provision_method: "{{ item.provision_method | default(omit) }}"  # Set provisioning method to boot disk
+    parameters: "{{ item.parameters | default(omit) }}"
+
+- name: Collect information about a specific VM
+  vmware.vmware_rest.vcenter_vm_info:
+    vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+    vcenter_username: "{{ vcenter_username | default(omit) }}"
+    vcenter_password: "{{ vcenter_password | default(omit) }}"
+    vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+    filter_names: 
+    - '{{ item.name }}'
+  register: vm_id
+  delegate_to: localhost
+
+- name: fix vm retry relay the vm
+  block:
+  - name: Change a VM boot parameters
+    vmware.vmware_rest.vcenter_vm_hardware_boot:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+      retry_delay: 15000
+    delegate_to: localhost
+    
+  - name: grab state of VM
+    vmware.vmware_rest.vcenter_vm_power_info:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+    register: vm_power_state  
+    delegate_to: localhost 
+    
+  - name: Start the VM
+    vmware.vmware_rest.vcenter_vm_power:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      state: start
+      vm: "{{ vm_id['value'][0].vm }}"
+    register: vm_power_state
+    when: vm_power_state.value.state != 'POWERED_ON'
+    delegate_to: localhost
+
+  - set_fact:
+      vm_power_state: {'value':{'state':'POWERED_ON'}}
+    delegate_to: localhost
+    when: not vm_power_state.changed
+
+  - name: Wait for VM to power off
+    vmware.vmware_rest.vcenter_vm_power_info:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+    delegate_to: localhost
+    register: vm_power_state
+    until: vm_power_state.value.state == "POWERED_OFF"
+    retries: 160 
+    delay: 10
+    when: vm_power_state.value.state != "POWERED_OFF"
+
+  - name: Get guest network interfaces information
+    vmware.vmware_rest.vcenter_vm_hardware_ethernet_info:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+    delegate_to: localhost
+    register: _net_info
+
+  - name: Turn the NIC's start_connected flag on
+    vmware.vmware_rest.vcenter_vm_hardware_ethernet:
+      nic: "{{ _net_info.value[0]['nic'] }}"
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      state: absent
+      vm: "{{ vm_id['value'][0].vm }}"
+    delegate_to: localhost
+
+  - name: collect CDROM info
+    vmware.vmware_rest.vcenter_vm_hardware_cdrom_info:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+    register: cdrom
+    delegate_to: localhost
+
+  - name: Disconnect CDROM 
+    vmware.vmware_rest.vcenter_vm_hardware_cdrom:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+      state: absent
+      cdrom: "{{ cdrom.value[0].cdrom }}"
+    register: cdrom
+    delegate_to: localhost
+
+  when: item.state | lower == 'present'
+- block:
+  - name: poweroff the VM
+    vmware.vmware_rest.vcenter_vm_power:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      state: stop
+      vm: "{{ vm_id['value'][0].vm }}"
+    delegate_to: localhost
+
+  - name: destroy a VM
+    vmware.vmware_rest.vcenter_vm:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+      state: "{{ item.state }}"
+    delegate_to: localhost
+  when: item.state | lower == 'absent' and vm_id['value'] | length == 1

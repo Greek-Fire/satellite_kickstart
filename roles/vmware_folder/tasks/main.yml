@@ -1,0 +1,7 @@
+- name: Build a list of all the folders
+  vmware.vmware_rest.vcenter_folder_info:
+    vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+    vcenter_username: "{{ vcenter_username | default(omit) }}"
+    vcenter_password: "{{ vcenter_password | default(omit) }}"
+    vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+  register: my_folders
