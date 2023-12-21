@@ -46,8 +46,6 @@
       tags: compute_profiles
     - role: generate_webcontent_from_isos
       tags: generate_webcontent_from_isos
-    - role: generate_webcontent_from_zips
-      tags: generate_webcontent_from_zips
     - role: vm_web_path
       tags: vm_web_path
     - role: redhat.satellite.repositories
