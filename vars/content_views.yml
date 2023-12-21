@@ -7,8 +7,6 @@ satellite_content_views:
     product: OEL-KS
   - name: OEL69-KS
     product: OEL-KS
-  - name: OEL-SUBMAN
-    product: OEL-KS
 - name: RHEL-KS
   repositories:
   - name: 'Red Hat Enterprise Linux 8 for x86_64 - AppStream Kickstart 8.8'

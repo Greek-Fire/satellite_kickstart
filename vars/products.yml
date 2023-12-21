@@ -18,13 +18,3 @@ satellite_products:
     unprotected: true
     verify_ssl_on_sync: false
     url: "{{ satellite_server_url }}/pub/OEL79-KS"
-  - name: OEL7-SUBMAN
-    content_type: yum
-    unprotected: true
-    verify_ssl_on_sync: false
-    url: "{{ satellite_server_url }}/pub/OEL7-SUBMAN"
-  - name: OEL8-SUBMAN
-    content_type: yum
-    unprotected: true
-    verify_ssl_on_sync: false
-    url: "{{ satellite_server_url }}/pub/OEL8-SUBMAN"
