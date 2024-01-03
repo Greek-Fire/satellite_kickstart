@@ -68,8 +68,8 @@
       tags: create_host
       vars:
         satellite_hosts:
-        - name: 'autobuildol8.lou.land'
-          hostgroup: 00-Template-Maker/OL8-Template-Maker
+        - name: 'autobuildrh8.lou.land'
+          hostgroup: 00-Template-Maker/RH8-Template-Maker
           organization: hallas
           location: hallas
           state: present 
@@ -79,12 +79,10 @@
           parameters:
           - name: 'package_update'
             value: false
-          - name: 'disa_stig'
-            value: false
           interfaces_attributes:
           - type: "interface"
             provision: true
             primary: true
             managed: true
             subnet: "192.168.2.0"
-            ip: "192.168.2.57"
+            ip: "192.168.2.58"

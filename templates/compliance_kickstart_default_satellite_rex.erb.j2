@@ -12,11 +12,11 @@ description: |
 SATELLITE_REX="<%= host_param('satellite_rex') %>"
 REX_PUB_KEY="<%= host_param('satellite_rex_pub_key') %>"
 
-echo "Adding user $SATELLITE_USER..."
-/usr/sbin/useradd $SATELLITE_USER
+echo "Adding user $SATELLITE_REX..."
+/usr/sbin/useradd $SATELLITE_REX
 
 echo "Adding users to sudoers..."
-echo "$SATELLITE_USER ALL=(ALL) NOPASSWD:ALL" | /usr/bin/tee -a /etc/sudoers
+echo "$SATELLITE_REX ALL=(ALL) NOPASSWD:ALL" | /usr/bin/tee -a /etc/sudoers
 
 # Configure SSHD for key-based authentication
 SSHD_CONFIG="/etc/ssh/sshd_config"
@@ -24,13 +24,13 @@ SSHD_CONFIG="/etc/ssh/sshd_config"
 echo "Configuring SSHD for key-based authentication..."
 /bin/cp "$SSHD_CONFIG" "$SSHD_CONFIG.bak"
 
-mkdir -m 700 /home/$SATELLITE_USER/.ssh
-echo "ssh-rsa " > /home/$SATELLITE_USER/.ssh/authorized_keys
-chmod 600 /home/$SATELLITE_USER/.ssh/authorized_keys
-chown -R $SATELLITE_USER:$SATELLITE_USER /home/$SATELLITE_USER/.ssh
+mkdir -m 700 /home/$SATELLITE_REX/.ssh
+echo "ssh-rsa $REX_PUB_KEY" > /home/$SATELLITE_REX/.ssh/authorized_keys
+chmod 600 /home/$SATELLITE_REX/.ssh/authorized_keys
+chown -R $SATELLITE_REX:$SATELLITE_REX /home/$SATELLITE_REX/.ssh
 
 {
-    echo "Match User $AUTOMATION_USER,$SATELLITE_USER"
+    echo "Match User $AUTOMATION_USER,$SATELLITE_REX"
     echo '    PasswordAuthentication no'
     echo '    AuthenticationMethods publickey'
 } | /usr/bin/tee -a "$SSHD_CONFIG"

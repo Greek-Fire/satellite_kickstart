@@ -48,6 +48,8 @@ satellite_hostgroups:
   organization: hallas
   kickstart_repository: Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.9
   parameters:
+  - name: skip_packages
+    value: telnet-server,ypserv,rsh-server,vsftpd,tftp-server,xorg-x11-server-common
   - name: packages
     value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
   - name: disa_stig
@@ -59,8 +61,10 @@ satellite_hostgroups:
   kickstart_repository: Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8
   operatingsystem: KS-RedHat 8.8
   parameters:
+  - name: skip_packages
+    value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
   - name: packages
-    value: sssd,wget,dnf-utils
+    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11
   - name: disa_stig
     value: True
 - name: OL8-Template-Maker
@@ -70,10 +74,10 @@ satellite_hostgroups:
   architecture: x86_64
   medium: OracleLinux8.7
   parameters:
-  #- name: skip_packages
-  #  value: rhn*
+  - name: skip_packages
+    value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
   - name: packages
-    value: sssd,wget,yum-utils
+    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11
   - name: disa_stig
     value: True
 - name: OL7-Template-Maker
@@ -83,8 +87,8 @@ satellite_hostgroups:
   architecture: x86_64
   medium: OracleLinux7.9
   parameters:
-  #- name: skip_packages
-  #  value: rhn*
+  - name: skip_packages
+    value: telnet-server,ypserv,rsh-server,vsftpd,tftp-server,xorg-x11-server-common
   - name: packages
     value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
   - name: disa_stig
