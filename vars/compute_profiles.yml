@@ -17,6 +17,9 @@ satellite_compute_profiles:
       add_cdrom: True
       boot_order: 
       - cdrom
+      scsi_controllers: 
+      - type: "ParaVirtualSCSIController"
+        key: 1000
       volumes_attributes:
         0:
           datastore: "cloud (1)"
@@ -39,6 +42,11 @@ satellite_compute_profiles:
       guest_id: rhel7_64Guest
       corespersocket: 1
       memory_mb: 8192
+      boot_order: 
+      - cdrom
+      scsi_controllers: 
+      - type: "ParaVirtualSCSIController"
+        key: 1000
       volumes_attributes:
         0:
           datastore: "cloud (1)"
@@ -64,6 +72,9 @@ satellite_compute_profiles:
       add_cdrom: True
       boot_order: 
       - cdrom
+      scsi_controllers: 
+      - type: "ParaVirtualSCSIController"
+        key: 1000
       volumes_attributes:
         0:
           datastore: "cloud (1)"
@@ -89,6 +100,9 @@ satellite_compute_profiles:
       add_cdrom: True
       boot_order: 
       - cdrom
+      scsi_controllers: 
+      - type: "ParaVirtualSCSIController"
+        key: 1000
       volumes_attributes:
         0:
           datastore: "cloud (1)"
@@ -114,6 +128,9 @@ satellite_compute_profiles:
       add_cdrom: True
       boot_order: 
       - cdrom
+      scsi_controllers: 
+      - type: "ParaVirtualSCSIController"
+        key: 1000
       volumes_attributes:
         0:
           datastore: "cloud (1)"
