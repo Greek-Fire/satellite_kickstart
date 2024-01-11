@@ -1,0 +1,14 @@
+- name: create ovf direcotry
+  file:
+    path: ovf
+    state: directory
+    mode: 0755
+  delegate_to: localhost
+
+- shell:
+    cmd:  "{{ item }}"
+    chdir: ovf
+  with_items:
+  # - 'govc export.ovf -vm={{ vm_name }} ovf/{{ vm_name }}.ovf'
+  - 'govc library.import -n {{ vm_name }} {{ content_library_name }} autobuildrh8.lou.land.ovf/autobuildrh8.lou.land/autobuildrh8.lou.land.ovf'
+  delegate_to: localhost

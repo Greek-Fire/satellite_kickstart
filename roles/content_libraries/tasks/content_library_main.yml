@@ -1,0 +1,85 @@
+- name: Create a new local content library
+  vmware.vmware_rest.content_locallibrary:
+    vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+    vcenter_username: "{{ vcenter_username | default(omit) }}"
+    vcenter_password: "{{ vcenter_password | default(omit) }}"
+    vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+    id:                 "{{ item.id   | default(omit) }}"
+    type:               "{{ item.type | default(omit) }}"
+    name:               "{{ item.name }}"
+    state:              "{{ item.state   | default(omit) }}"
+    version:            "{{ item.version | default(omit) }}"
+    library_id:         "{{ item.library_id     | default(omit) }}"
+    server_guid:        "{{ item.server_guid    | default(omit) }}"
+    description:        "{{ item.description    | default(omit) }}"
+    publish_info:       "{{ item.publish_info   | default(omit) }}"
+    subscriptions:      "{{ item.subscriptions  | default(omit) }}"
+    last_sync_time:     "{{ item.last_sync_time | default(omit) }}"
+    session_timeout:    "{{ item.session_timeout    | default(omit) }}"
+    storage_backings:   "{{ item.storage_backings   | default(omit) }}"
+    subscription_info:  "{{ item.subscription_info  | default(omit) }}"
+    optimization_info:  "{{ item.optimization_info  | default(omit) }}"
+    security_policy_id: "{{ item.security_policy_id | default(omit) }}"
+    last_modified_time: "{{ item.last_modified_time | default(omit) }}"
+    unset_security_policy_id: "{{ item.unset_security_policy_id | default(omit) }}"
+    vcenter_rest_log_file:    "{{ item.vcenter_rest_log_file    | default(omit) }}"
+    client_token:             "{{ item.client_token  | default(omit) }}"
+    creation_time:            "{{ item.creation_time | default(omit) }}"
+    library_id:               "{{ item.library_id    | default(omit) }}"
+  delegate_to: localhost
+  register: primary_content_library_info
+
+- set_fact:
+    subscription_info:
+      subscription_url: "{{ primary_content_library_info.value['publish_info']['publish_url'] }}"
+      authentication_method: NONE
+      on_demand: true
+      automatic_sync_enabled: true
+    library_id: "{{ primary_content_library_info.value.id }}"
+
+- name: Get VM ID by VM Name
+  vmware.vmware_rest.vcenter_vm_info:
+    vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+    vcenter_username: "{{ vcenter_username | default(omit) }}"
+    vcenter_password: "{{ vcenter_password | default(omit) }}"
+    vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+    filter_names:
+      - "{{ item.vm_name }}" 
+  register: vm_info
+  delegate_to: localhost
+
+- name: Set VM ID as a variable
+  set_fact:
+    vm_id: "{{ vm_info.value[0].vm }}"
+
+- fail:
+    msg: "{{ item.vm_name }} VM not found"
+  when: vm_id is not defined
+
+- name: Export the VM as an OVF on the library
+  vmware.vmware_rest.vcenter_ovf_libraryitem:
+    vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+    vcenter_username: "{{ vcenter_username | default(omit) }}"
+    vcenter_password: "{{ vcenter_password | default(omit) }}"
+    vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+    session_timeout: 2900
+    source:
+      type: VirtualMachine
+      id: '{{ vm_id }}'
+    target:
+      library_id: '{{ library_id}}'
+    create_spec:
+      name: golden_image
+      description: an OVF example
+      flags: []
+    state: present
+  delegate_to: localhost
+  when: export_ovf
+
+- include_tasks: content_library_subscriber.yml
+  with_items: "{{ item.content_library_subscriber }}"
+  loop_control:
+    loop_var: library
+  when: run
+  vars:
+    run: "{{ (item.content_library_subscriber is defined) | ternary(true, false)}}"

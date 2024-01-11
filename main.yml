@@ -64,6 +64,8 @@
       tags: content_views
     - role: content_libraries
       tags: content_libraries
+    - role: export_ovf
+      tags: export_ovf
     - role: hosts
       tags: create_host
       vars:
