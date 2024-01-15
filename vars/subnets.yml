@@ -10,10 +10,6 @@ satellite_subnets:
     organizations: hallas
     locations: hallas
     parameters:
-    - name: vcenter
-      value: vcenter.lou.land
-    - name: datacenter
-      value: TNDC
     - name: cluster
       value: TNCL
     - name: network

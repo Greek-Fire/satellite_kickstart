@@ -20,6 +20,11 @@ satellite_locations:
   organizations:
   - hallas
   state: present
+  parameters:
+  - name: vcenter
+    value: vcenter.lou.land
+  - name: datacenter
+    value: TNDC
 
 satellite_partition_table:
 - name: Compliance STIG Disk Layout
