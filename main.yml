@@ -1,15 +1,12 @@
 - hosts: all
   gather_facts: 0
-  vars_files:
-  - vars/subnets.yml
-  - vars/main.yml
   roles:
   - role: gather_subset
     tags: gather_subset
   - role: redhat.satellite.organizations
     tags: organizations
-  #- role: redhat.satellite.locations
-  #  tags: locations
+  - role: locations
+    tags: locations
   - role: redhat.satellite.subnets
     tags: subnets
   - role: redhat.satellite.provisioning_templates
@@ -22,17 +19,6 @@
 
 - hosts: all
   gather_facts: 0
-  vars_files:
-  - vars/vcenter.yml
-  - vars/hostgroups.yml
-  - vars/main.yml
-  - vars/compute_resources.yml
-  - vars/compute_profiles.yml
-  - vars/content_views.yml
-  - vars/hostgroups.yml
-  - vars/operatingsystems.yml
-  - vars/provisioning_templates.yml
-  - vars/products.yml
   roles:
     - role: gather_subset
       tags: gather_subset
@@ -62,29 +48,29 @@
       tags: repository_sync
     - role: redhat.satellite.content_views
       tags: content_views
-    - role: content_libraries
-      tags: content_libraries
-    - role: export_ovf
-      tags: export_ovf
-    - role: hosts
-      tags: create_host
-      vars:
-        satellite_hosts:
-        - name: 'autobuildrh8.lou.land'
-          hostgroup: 00-Template-Maker/RH8-Template-Maker
-          organization: hallas
-          location: hallas
-          state: present 
-          build: True
-          pxe_loader: Grub2 UEFI
-          provision_method: bootdisk
-          parameters:
-          - name: 'package_update'
-            value: false
-          interfaces_attributes:
-          - type: "interface"
-            provision: true
-            primary: true
-            managed: true
-            subnet: "192.168.2.0"
-            ip: "192.168.2.58"
+    #- role: content_libraries
+    #  tags: content_libraries
+    #- role: export_ovf
+    #  tags: export_ovf
+    #- role: hosts
+    #  tags: create_host
+    #  vars:
+    #    satellite_hosts:
+    #    - name: 'autobuildrh8.lou.land'
+    #      hostgroup: 00-Template-Maker/RH8-Template-Maker
+    #      organization: hallas
+    #      location: hallas
+    #      state: present 
+    #      build: True
+    #      pxe_loader: Grub2 UEFI
+    #      provision_method: bootdisk
+    #      parameters:
+    #      - name: 'package_update'
+    #        value: false
+    #      interfaces_attributes:
+    #      - type: "interface"
+    #        provision: true
+    #        primary: true
+    #        managed: true
+    #        subnet: "192.168.2.0"
+    #        ip: "192.168.2.58"
