@@ -1,0 +1,20 @@
+satellite_products: 
+- name: vmware-templates
+  repositories:
+  - name: vm-templates
+    content_type: file
+    unprotected: true
+    verify_ssl_on_sync: false
+    url: "{{ satellite_server_url }}/pub/vm-templates"
+- name: 'OEL-KS'
+  repositories:
+  - name: OEL87-KS
+    content_type: file
+    unprotected: true
+    verify_ssl_on_sync: false
+    url: "{{ satellite_server_url }}/pub/OEL87-KS"
+  - name: OEL79-KS
+    content_type: file
+    unprotected: true
+    verify_ssl_on_sync: false
+    url: "{{ satellite_server_url }}/pub/OEL79-KS"

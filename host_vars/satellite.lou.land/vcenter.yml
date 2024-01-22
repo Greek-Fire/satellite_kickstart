@@ -1,0 +1,4 @@
+vcenter_hostname: vcenter.lou.land
+vcenter_username: administrator@lou.land
+vcenter_password: Gr33k*G0d7
+vcenter_validate_certs: False

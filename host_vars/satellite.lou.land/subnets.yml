@@ -1,0 +1,16 @@
+satellite_subnets:
+  - name: 192.168.2.0
+    description: "Created to KS VM Templates"
+    network: "192.168.2.0"
+    mask: "255.255.255.0"
+    ipam: "None"
+    gateway: "192.168.2.1"
+    boot_mode: "Static"
+    domains: "lou.land"
+    organizations: hallas
+    locations: hallas
+    parameters:
+    - name: cluster
+      value: TNCL
+    - name: network
+      value: "VM Network"

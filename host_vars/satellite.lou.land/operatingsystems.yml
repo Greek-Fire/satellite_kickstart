@@ -1,0 +1,134 @@
+satellite_operatingsystems:
+- name:  "KS-RedHat"
+  major: "8"
+  minor: "8"
+  os_family: "Redhat"
+  password_hash: SHA256
+  architectures: x86_64
+  ptables: Compliance STIG Kickstart Disk Layout
+  default_templates:
+  - template_kind: "provision"
+    provisioning_template: "Compliance Kickstart default"
+  - template_kind: "PXELinux"
+    provisioning_template: "Kickstart default PXELinux"
+  - template_kind: "iPXE"
+    provisioning_template: "Kickstart default iPXE"
+  - template_kind: "PXEGrub"
+    provisioning_template: "Kickstart default PXEGrub"
+  - template_kind: "PXEGrub2"
+    provisioning_template: "Kickstart default PXEGrub2"
+  - template_kind: "finish"
+    provisioning_template: "Kickstart default finish"
+  - template_kind: "host_init_config"
+    state:  absent
+  - template_kind: "kexec"
+    state:  absent
+  - template_kind: "user_data"
+    state:  absent
+- name:  "KS-RedHat"
+  major: "7"
+  minor: "9"
+  os_family: "Redhat"
+  password_hash: "SHA256"
+  architectures: "x86_64"
+  ptables: "Compliance STIG Kickstart Disk Layout"
+  default_templates:
+  - template_kind: "provision"
+    provisioning_template: "Compliance Kickstart default"
+  - template_kind: "PXELinux"
+    provisioning_template: "Kickstart default PXELinux"
+  - template_kind: "iPXE"
+    provisioning_template: "Kickstart default iPXE"
+  - template_kind: "PXEGrub"
+    provisioning_template: "Kickstart default PXEGrub"
+  - template_kind: "PXEGrub2"
+    provisioning_template: "Kickstart default PXEGrub2"
+  - template_kind: "finish"
+    provisioning_template: "Kickstart default finish"
+  - template_kind: "host_init_config"
+    state:  absent
+  - template_kind: "kexec"
+    state:  absent
+  - template_kind: "user_data"
+    state:  absent
+- name:  "KS-OracleLinux"
+  major: "8"
+  minor: "7"
+  os_family: "Redhat"
+  password_hash: "SHA256"
+  architectures: "x86_64"
+  ptables: "Compliance STIG Kickstart Disk Layout"
+  media: OracleLinux8.7
+  default_templates:
+  - template_kind: "provision"
+    provisioning_template: "Compliance Kickstart default"
+  - template_kind: "PXELinux"
+    provisioning_template: "Kickstart default PXELinux"
+  - template_kind: "iPXE"
+    provisioning_template: "Kickstart default iPXE"
+  - template_kind: "PXEGrub"
+    provisioning_template: "Kickstart default PXEGrub"
+  - template_kind: "PXEGrub2"
+    provisioning_template: "Kickstart default PXEGrub2"
+  - template_kind: "finish"
+    provisioning_template: "Kickstart default finish"
+  - template_kind: "host_init_config"
+    state:  absent
+  - template_kind: "kexec"
+    state:  absent
+  - template_kind: "user_data"
+    state:  absent
+- name:  "KS-OracleLinux"
+  major: "7"
+  minor: "9"
+  os_family: "Redhat"
+  password_hash: "SHA256"
+  architectures: "x86_64"
+  ptables: "Compliance STIG Kickstart Disk Layout"
+  media: OracleLinux7.9
+  default_templates:
+  - template_kind: "provision"
+    provisioning_template: "Compliance Kickstart default"
+  - template_kind: "PXELinux"
+    provisioning_template: "Kickstart default PXELinux"
+  - template_kind: "iPXE"
+    provisioning_template: "Kickstart default iPXE"
+  - template_kind: "PXEGrub"
+    provisioning_template: "Kickstart default PXEGrub"
+  - template_kind: "PXEGrub2"
+    provisioning_template: "Kickstart default PXEGrub2"
+  - template_kind: "finish"
+    provisioning_template: "Kickstart default finish"
+  - template_kind: "host_init_config"
+    state:  absent
+  - template_kind: "kexec"
+    state:  absent
+  - template_kind: "user_data"
+    state:  absent
+- name:  "KS-OracleLinux"
+  major: "6"
+  minor: "9"
+  os_family: "Redhat"
+  password_hash: "SHA256"
+  architectures: "x86_64"
+  ptables: "Compliance STIG Kickstart Disk Layout"
+  media: "OracleLinux6.9"
+  default_templates:
+  - template_kind: "provision"
+    provisioning_template: "Compliance Kickstart default"
+  - template_kind: "PXELinux"
+    provisioning_template: "Kickstart default PXELinux"
+  - template_kind: "iPXE"
+    provisioning_template: "Kickstart default iPXE"
+  - template_kind: "PXEGrub"
+    provisioning_template: "Kickstart default PXEGrub"
+  - template_kind: "PXEGrub2"
+    provisioning_template: "Kickstart default PXEGrub2"
+  - template_kind: "finish"
+    provisioning_template: "Kickstart default finish"
+  - template_kind: "host_init_config"
+    state:  absent
+  - template_kind: "kexec"
+    state:  absent
+  - template_kind: "user_data"
+    state:  absent

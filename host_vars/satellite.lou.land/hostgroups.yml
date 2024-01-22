@@ -1,0 +1,109 @@
+satellite_hostgroups:
+- name: 00-Template-Maker
+  lifecycle_environment: Library
+  organization: hallas
+  openscap_proxy: satellite.lou.land
+  content_source: satellite.lou.land
+  compute_resource:  VMware
+  architecture: x86_64
+  content_view: library
+  activation_keys: library
+  ptable: Compliance STIG Kickstart Disk Layout 
+  root_pass: "{{ secret_root }}"
+  domain: lou.land
+  subnet: 192.168.2.0
+  parameters:
+  - name: grub_root_hash
+    value: "{{ grub_root_hash }}"
+  - name: template_prep
+    value: true
+  - name: host_registration_remote_execution
+    value: false
+  - name: use-ntp
+    value: false
+  - name: fips_enabled
+    value: true
+  - name: package_upgrade
+    value: false
+  - name: puppet_enabled
+    value: false
+  - name: remote_execution_create_user
+    value: true
+  - name: host_registration_insights
+    value: false
+  - name: satellite_rex
+    value: dossatellite
+  - name: satellite_rex_pub_key
+    value: "AAAAB3NzaC1yc2EAAAADAQABAAABgQC1I73IvofrfCWN1fVi46dHdWzttOS8uugleEvyaIhrKBzTKNx/5sObTryUOKjvNW4rsjTPVeW7nC4wzu3CXWx7quD64JtD+iGBSbECiKMPow8f/Xrm3ZGDpv4vyMxgWZ+EaEBsjwIVTQzIcbLGWHlFvfCsr+KpxVEwfaUDEIUciE9Rwemb3BMF/SU1NkZYWUSM9J1bPha6YCI4p6OZ6AGo4ZfKRDBATU0tf5vgOAjiQU+MDgXoe8nwNrZ9WlO6E7eQpZYBf/YcDvJ44fiMa6ugbuKgUFaPFyJY7j09ynS7TO3oRMxVEDgJLRSTU3UgOi5fK8w5AOkLJtv0B1dpI2UbH4lIS1QjH4XmnUn3tknmjhACe/kdIH+JUe+ZnPzBKlKQFLF3TsirT+5E7VQtg1hD0QRP8xENA69m86gtR2Ty3YkwgSm2BS8/yfK5Rhfr/Rj2FG5+9Pgj+/eEjBPtDef8nwqgLyNeplsgPA4yE79aPqZvXiFTQUE/EqXKTSGtuGU="
+  - name: root_size
+    value: 4096
+  - name: swap_size
+    value: 4096
+  - name: vg_name
+    value: my_vgnam
+- name: RH7-Template-Maker
+  parent: 00-Template-Maker
+  compute_profile: Rh7-Template-Maker
+  operatingsystem: KS-RedHat 7.9
+  organization: hallas
+  kickstart_repository: Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.9
+  parameters:
+  - name: skip_packages
+    value: telnet-server,ypserv,rsh-server,vsftpd,tftp-server,xorg-x11-server-common
+  - name: packages
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
+  - name: disa_stig
+    value: True
+- name: RH8-Template-Maker
+  parent: 00-Template-Maker
+  compute_profile: Rh8-Template-Maker
+  organization: hallas
+  kickstart_repository: Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8
+  operatingsystem: KS-RedHat 8.8
+  parameters:
+  - name: skip_packages
+    value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
+  - name: packages
+    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11
+  - name: disa_stig
+    value: True
+- name: OL8-Template-Maker
+  parent: 00-Template-Maker
+  compute_profile: Ol8-Template-Maker
+  operatingsystem: KS-OracleLinux 8.7 
+  architecture: x86_64
+  medium: OracleLinux8.7
+  parameters:
+  - name: skip_packages
+    value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
+  - name: packages
+    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11
+  - name: disa_stig
+    value: True
+- name: OL7-Template-Maker
+  parent: 00-Template-Maker
+  compute_profile: Ol7-Template-Maker
+  operatingsystem: KS-OracleLinux 7.9 
+  architecture: x86_64
+  medium: OracleLinux7.9
+  parameters:
+  - name: skip_packages
+    value: telnet-server,ypserv,rsh-server,vsftpd,tftp-server,xorg-x11-server-common
+  - name: packages
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
+  - name: disa_stig
+    value: True
+- name: OL6-Template-Maker
+  parent: 00-Template-Maker
+  compute_profile: Ol6-Template-Maker
+  operatingsystem: KS-OracleLinux 6.9
+  medium: OracleLinux6.9 
+  parameters:
+  - name: skip_packages
+    value: rhn*
+  - name: part_fstype
+    value: ext4
+  - name: packages
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,subscription-manager
+  - name: disa_stig
+    value: True
