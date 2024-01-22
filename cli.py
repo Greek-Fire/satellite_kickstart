@@ -43,7 +43,7 @@ class ReportGenerator:
         # Use self.report_path to determine the full path
         full_file_path = f'{self.report_path}/{file_name}' if self.report_path else file_name
 
-        headers = ['Name', 'job_type', 'failures', 'success', 'total']
+        headers = ['Name', 'job_type', 'total']
         with open(full_file_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)
