@@ -11,7 +11,7 @@ class APIClient:
                 config = yaml.safe_load(file)
             
             self.token       = config['token']
-            self.base_url    = config['base_url']
+            self.base_url    = config['aap_url']
             self.verify_ssl  = config['verify_ssl']
             self.report_path = config.get('report_path', '') 
 
@@ -62,8 +62,8 @@ class ReportGenerator:
 class CLI:
     def __init__(self):
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-        parser = argparse.ArgumentParser(description="CLI tool to fetch data from API and generate reports")
-        parser.add_argument("--config", type=str, default='/home/fake_user/.config.yml', help="Path to the config YAML file")
+        parser = argparse.ArgumentParser(description="CLI tool to fetch data from AAP API and generate reports")
+        parser.add_argument("--config", type=str, default='/home/fake_user/.config.yml', help="Path to the config YAML file. Config key options: aap_url, token, verify_ssl, report_path")
 
         args = parser.parse_args()
         self.config_path = args.config
