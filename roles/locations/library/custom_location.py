@@ -58,32 +58,51 @@ def fix_subnets(server_url, auth, ids, validate_certs=False, output_file='output
     results = response.json()
     name = results.get('name')
 
-    if not check_ip_or_network(name):
-        continue
-
     description_parts = results.get('description', '').split(',')
     if len(description_parts) >= 4:
         cluster = description_parts[2].strip()
         network = description_parts[3].strip()
+
+    name = results.get('name')
+    description = results.get('description')
+    network = results.get('network')
+    mask = results.get('mask')
+    ipam = results.get('ipam')
+    gateway = results.get('gateway')
+    boot_mode = results.get('boot_mode')
+    domains = results.get('domains')
+    organizations = results.get('organizations')
+    locations = results.get('locations')
+
+    domains = [item['name'] for item in domains]
+    organizations = [item['name'] for item in organizations]
+    locations = [item['name'] for item in locations]
+
+    if not check_ip_or_network(name):
+        continue
         
-    payload = [
-      {
-       "name": "cluster",
-       "value": cluster,
-       "typre": "string"
-      },
-      {
-       "name": "network",
-       "value": network,
-       "typre": "string"
-      }
-            ]
+    payload = f"""
+    - name: {name}
+      description: {description} # "Created to KS VM Templates"
+      network: {network} #"192.168.2.0"
+      mask: {mask} #"255.255.255.0"
+      ipam: {ipam} #"None"
+      gateway: {gateway} #"192.168.2.1"
+      boot_mode: {boot_mode} # "Static"
+      domains: {domains} #"lou.land"
+      organizations: {organizations}
+      locations: {locations} # hallas
+      parameters:
+      - name: 'cluster'
+        value: {cluster}
+      - name: 'network'
+        value: {network}
+      """
+    
     
 
     with open(output_file, 'a') as file:
-      for pay in payload:
-        response = requests.post(f'{url}/parameters', auth=auth, verify=validate_certs, json=pay)
-        file.write(f"'name': '{name}', 'ID': '{id}', 'Payload': '{pay}', 'Response': '{response}'\n")
+      file.write(f"{payload}")
 
         
 def main():
