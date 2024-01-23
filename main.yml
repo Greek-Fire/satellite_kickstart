@@ -7,7 +7,7 @@
     tags: organizations
   - role: locations
     tags: locations
-  - role: redhat.satellite.subnets
+  - role: subnets
     tags: subnets
   - role: redhat.satellite.provisioning_templates
     tags: provisioning_templates
@@ -52,25 +52,25 @@
     #  tags: content_libraries
     #- role: export_ovf
     #  tags: export_ovf
-    #- role: hosts
-    #  tags: create_host
-    #  vars:
-    #    satellite_hosts:
-    #    - name: 'autobuildrh8.lou.land'
-    #      hostgroup: 00-Template-Maker/RH8-Template-Maker
-    #      organization: hallas
-    #      location: hallas
-    #      state: present 
-    #      build: True
-    #      pxe_loader: Grub2 UEFI
-    #      provision_method: bootdisk
-    #      parameters:
-    #      - name: 'package_update'
-    #        value: false
-    #      interfaces_attributes:
-    #      - type: "interface"
-    #        provision: true
-    #        primary: true
-    #        managed: true
-    #        subnet: "192.168.2.0"
-    #        ip: "192.168.2.58"
+    - role: hosts
+      tags: create_host
+      vars:
+        satellite_hosts:
+        - name: 'autobuildrh8.lou.land'
+          hostgroup: 00-Template-Maker/RH8-Template-Maker
+          organization: hallas
+          location: hallas
+          state: present 
+          build: True
+          pxe_loader: Grub2 UEFI
+          provision_method: bootdisk
+          parameters:
+          - name: 'package_update'
+            value: false
+          interfaces_attributes:
+          - type: "interface"
+            provision: true
+            primary: true
+            managed: true
+            subnet: "192.168.2.0"
+            ip: "192.168.2.58"
