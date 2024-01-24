@@ -28,11 +28,65 @@ class APIClient:
             print(f"An unexpected error occurred: {e}")
             exit(1)
 
+    def count_hosts_and_statuses(self, log_content):
+        host_status_counts = {
+            'total_hosts': 0,
+            'total_unreachable': 0,
+            'total_failed': 0,
+            'success': 0
+        }
+        lines = log_content.split('\n')
+
+        if not any("PLAY RECAP" in line for line in lines):
+            print("No hosts found in the log.")
+            return {}
+
+        for line in lines:
+            # Check for lines indicating host status
+            if 'fatal=' in line or 'changed=' in line or 'ok=' in line:
+                host_status_counts['total_hosts'] += 1
+                if 'unreachable=' in line:
+                    host_status_counts['total_unreachable'] += 1
+                elif 'failed=' in line and not 'failed=0' in line:
+                    host_status_counts['total_failed'] += 1
+
+        # Calculating hosts not unreachable or failed
+        host_status_counts['success'] = \
+            host_status_counts['total_hosts'] - host_status_counts['total_unreachable'] - host_status_counts['total_failed']
+
+        return host_status_counts
+
     def get_data(self):
-        url = f'{self.base_url}/api/v2/jobs?page_size=9999'
         headers = {'Authorization': f'Bearer {self.token}'}
-        response = requests.get(url, headers=headers, verify=self.verify_ssl)
-        return response.json()
+        results = []
+        pages = None
+
+        while True:
+
+            if pages is None:
+                pages = '/api/v2/jobs?page_size=100'
+
+            url = f'{self.base_url}/{pages}'
+            response = requests.get(url, headers=headers, verify=self.verify_ssl)
+            data = response.json()
+
+            for job in data['results']:
+                job_stdout_url = f'{self.base_url}/api/v2/jobs/{job["id"]}/stdout/?format=txt'
+                job_response = requests.get(job_stdout_url, headers=headers, verify=self.verify_ssl)
+                count = self.count_hosts_and_statuses(job_response.text)
+
+                if count:  # Skip jobs with no hosts
+                    count['name'] = job['name']
+                    count['id'] = job['id']
+                    results.append(count)
+                    print(count)
+
+            pages = data['next']
+
+            if pages is None:
+                break
+
+        return results
 
 class ReportGenerator:
     def __init__(self, data, report_path):
@@ -43,18 +97,13 @@ class ReportGenerator:
         # Use self.report_path to determine the full path
         full_file_path = f'{self.report_path}/{file_name}' if self.report_path else file_name
 
-        headers = ['Name', 'job_type', 'total']
+        headers = ['Name', 'total_hosts', 'success', 'total_unreachable', 'total_failed','job_id']
         with open(full_file_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)
 
-            for job in self.data['results']:
-                if job['limit'] == "":
-                    total = job['summary_fields']['inventory']['total_hosts']
-                else:
-                    total = len(job['limit'].split(','))
-
-                row = [job['name'], job['job_type'], total]
+            for job in self.data:
+                row = [job['name'], job['total_hosts'], job['success'], job['total_unreachable'], job['total_failed'], job['id']]
                 writer.writerow(row)
 
         print(f"Report generated: {full_file_path}")

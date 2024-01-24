@@ -36,5 +36,5 @@
     vlanid: "{{ item.vlanid | default(omit) }}"
     state: "{{ item.state | default('present') }}"
   vars:
-    description: "{{ (item.description is defined) | ternary(omit, omit) }}"
+    description: "{{ (item.description is defined) | ternary(item.parameters | selectattr('name','eq','cluster'),omit) }}"
     parameters:  "{{ (item.parameters is defined)  | ternary(item.parameters + [{'name': 'datastore','value': (item.parameters | selectattr('name','eq','cluster'))[0]['value']+ '-VSAN'}], omit) }}"
