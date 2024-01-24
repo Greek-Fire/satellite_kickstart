@@ -14,3 +14,18 @@ satellite_subnets:
       value: TNCL
     - name: network
       value: "VM Network"
+  - name: 192.168.3.0
+    description: "Created to KS VM Templates"
+    network: "192.168.3.0"
+    mask: "255.255.255.0"
+    ipam: "None"
+    gateway: "192.168.3.1"
+    boot_mode: "Static"
+    domains: "lou.land"
+    organizations: hallas
+    locations: hallas
+    parameters:
+    - name: cluster
+      value: TNCL
+    - name: network
+      value: "VM Network"
