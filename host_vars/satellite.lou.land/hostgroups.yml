@@ -8,7 +8,6 @@ satellite_hostgroups:
   architecture: x86_64
   content_view: library
   activation_keys: library
-  ptable: Compliance STIG Kickstart Disk Layout 
   root_pass: "{{ secret_root }}"
   domain: lou.land
   subnet: 192.168.2.0
@@ -51,7 +50,7 @@ satellite_hostgroups:
   - name: skip_packages
     value: telnet-server,ypserv,rsh-server,vsftpd,tftp-server,xorg-x11-server-common
   - name: packages
-    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc,perl
   - name: disa_stig
     value: True
 - name: RH8-Template-Maker
@@ -62,9 +61,9 @@ satellite_hostgroups:
   operatingsystem: KS-RedHat 8.8
   parameters:
   - name: skip_packages
-    value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
+    value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,policycoresutils-python,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
   - name: packages
-    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11
+    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,policycoresutils-python,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11,perl
   - name: disa_stig
     value: True
 - name: OL8-Template-Maker
@@ -77,7 +76,7 @@ satellite_hostgroups:
   - name: skip_packages
     value: abrt-cli,abrt-plugin-logger,abrt-addon-ccpp,abrt-addon-kerneloops,abrt-plugin-rhtsupport,abrt-plugin-sosreport,python3-abrt-addon,tuned,iprutils,vsftpd,xorg-x11-server-Xorg,xorg-x11-server-utils,xorg-x11-server-Xwayland,xorg-x11-server-common,sendmail,telnet-server,rsh-server,tftp-server,krb5-workstation,abrt
   - name: packages
-    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11
+    value: sssd,wget,dnf-utils,rsyslog,rsyslog-gnutls,policycoreutils,usbguard,rng-tools,opensc,openssh-server,audit,tmux,fapolicyd,esc,aide,openssl-pkcs11,perl
   - name: disa_stig
     value: True
 - name: OL7-Template-Maker
@@ -90,7 +89,7 @@ satellite_hostgroups:
   - name: skip_packages
     value: telnet-server,ypserv,rsh-server,vsftpd,tftp-server,xorg-x11-server-common
   - name: packages
-    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc
+    value: sssd,wget,yum-utils,pam_pkcs11,dracut-fips-aesni,openssh-server,screen,aide,esc,perl
   - name: disa_stig
     value: True
 - name: OL6-Template-Maker

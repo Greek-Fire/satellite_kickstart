@@ -8,7 +8,7 @@ satellite_username: admin
 satellite_password: redhat
 satellite_organization:   hallas
 vm_template_web_path: "/var/www/html/pub/vm-templates"
-satellite_validate_certs: "{{ validate_certs | default('true') }}"
+satellite_validate_certs: "{{ validate_certs | default('false') }}"
 
 satellite_organizations:
 - name: hallas
@@ -32,6 +32,10 @@ satellite_locations:
 
 satellite_partition_table:
 - name: Compliance STIG Disk Layout
+  organizations:
+  - hallas
+  locations:
+  - hallas
   layout: "{{ lookup('template', 'disa_stig_kickstart_disk_layout.erb.j2') }}"
   os_family: Redhat
 

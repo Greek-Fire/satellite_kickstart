@@ -79,8 +79,37 @@
     delegate_to: localhost
     register: vm_power_state
     until: vm_power_state.value.state == "POWERED_OFF"
-    retries: 160 
-    delay: 10
+    retries: 250
+    delay: 25
+    when: vm_power_state.value.state != "POWERED_OFF"
+
+  - name: Poweron the VM
+    vmware.vmware_rest.vcenter_vm_power:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      state: start
+      vm: "{{ vm_id['value'][0].vm }}"
+    delegate_to: localhost
+
+  - set_fact:
+      vm_power_state: {'value':{'state':'POWERED_ON'}}
+    delegate_to: localhost
+    when: not vm_power_state.changed
+
+  - name: Wait for VM to power off
+    vmware.vmware_rest.vcenter_vm_power_info:
+      vcenter_hostname: "{{ vcenter_hostname | default(omit) }}"
+      vcenter_username: "{{ vcenter_username | default(omit) }}"
+      vcenter_password: "{{ vcenter_password | default(omit) }}"
+      vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+      vm: "{{ vm_id['value'][0].vm }}"
+    delegate_to: localhost
+    register: vm_power_state
+    until: vm_power_state.value.state == "POWERED_OFF"
+    retries: 250
+    delay: 25
     when: vm_power_state.value.state != "POWERED_OFF"
 
   - name: Get guest network interfaces information

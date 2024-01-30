@@ -410,5 +410,5 @@ else
   <%= indent(2, skip1: true) { snippet('built', :variables => { :endpoint => 'failed', :method => 'POST', :body_file => '/root/install.post.log' }) } -%>
 fi
 sync
-reboot
+poweroff
 <%= section_end %>

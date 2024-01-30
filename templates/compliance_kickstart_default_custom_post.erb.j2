@@ -93,10 +93,6 @@ else
     yum clean all
 fi
 
-# Clean out /root
-rm -rf /root/*
-rm -f /root/.bash_history
-
 # Truncate files in /var/log
 find /var/log -type f -exec truncate --size=0 {} \;
 
@@ -130,6 +126,10 @@ systemctl disable first-boot.service
 
 rm -f /etc/systemd/system/first-boot.service
 rm -f /root/first-boot.sh
+
+# Clean out /root
+rm -rf /root/*
+rm -f /root/.bash_history
 
 poweroff
 EOF

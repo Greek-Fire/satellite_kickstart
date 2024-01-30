@@ -4,16 +4,19 @@ import argparse
 import csv
 from urllib3.exceptions import InsecureRequestWarning
 
+
 class APIClient:
     def __init__(self, config_path):
         try:
             with open(config_path, 'r') as file:
                 config = yaml.safe_load(file)
             
-            self.token       = config['token']
             self.base_url    = config['aap_url']
             self.verify_ssl  = config['verify_ssl']
             self.report_path = config.get('report_path', '') 
+
+            self.username = config['username']
+            self.password = config['password']
 
         except FileNotFoundError:
             print(f"Error: The file '{config_path}' was not found.")
@@ -57,7 +60,6 @@ class APIClient:
         return host_status_counts
 
     def get_data(self):
-        headers = {'Authorization': f'Bearer {self.token}'}
         results = []
         pages = None
 
@@ -67,12 +69,12 @@ class APIClient:
                 pages = '/api/v2/jobs?page_size=100'
 
             url = f'{self.base_url}/{pages}'
-            response = requests.get(url, headers=headers, verify=self.verify_ssl)
+            response = requests.get(url, auth=(self.username, self.password), verify=self.verify_ssl)
             data = response.json()
 
             for job in data['results']:
                 job_stdout_url = f'{self.base_url}/api/v2/jobs/{job["id"]}/stdout/?format=txt'
-                job_response = requests.get(job_stdout_url, headers=headers, verify=self.verify_ssl)
+                job_response = requests.get(job_stdout_url, auth=(self.username,self.password), verify=self.verify_ssl)
                 count = self.count_hosts_and_statuses(job_response.text)
 
                 if count:  # Skip jobs with no hosts

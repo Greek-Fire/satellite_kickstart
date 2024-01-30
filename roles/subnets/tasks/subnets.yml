@@ -37,5 +37,5 @@
     state: "{{ item.state | default('present') }}"
   vars:
     description: "{{ (item.description is defined) | ternary(item.parameters | selectattr('name','eq','cluster'),omit) }}"
-    parameters: "{{ (item.parameters is defined) | ternary(item.parameters + [{'name': 'datastore', 'value': (item.parameters | selectattr('name','eq','cluster'))[0]['value'] + '-VSAN'}, {'name': 'content_library', 'value': '01-' + (item.parameters | selectattr('name','eq','cluster'))[0]['value']}], omit) }}"
+    parameters:  "{{ (item.parameters is defined)  | ternary(item.parameters + [{'name': 'datastore', 'value': (item.parameters | selectattr('name','eq','cluster'))[0]['value'] + '-VSAN'}, {'name': 'content_library', 'value': '01-' + (item.parameters | selectattr('name','eq','cluster'))[0]['value']}], omit) }}"
 #"{{ (item.parameters is defined)  | ternary(item.parameters + [{'name': 'datastore','value': (item.parameters | selectattr('name','eq','cluster'))[0]['value']+ '-VSAN','name': 'content_library','value': '01-' + (item.parameters | selectattr('name','eq','cluster'))[0]['value']}], omit) }}"

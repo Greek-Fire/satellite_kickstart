@@ -132,3 +132,22 @@ satellite_operatingsystems:
     state:  absent
   - template_kind: "user_data"
     state:  absent
+- name:  "RH8"
+  major: "8"
+  os_family: "Redhat"
+  state: present
+  password_hash: "SHA256"
+  architectures: "x86_64"
+  parameters:
+  - name: vm_template
+    value: autobuildrh8.lou.land
+- name:  "RH7"
+  major: "7"
+  os_family: "Redhat"
+  state: present
+  password_hash: "SHA256"
+  architectures: "x86_64"
+  parameters:
+  - name: vm_template
+    value: autobuildrh7.lou.land
+
