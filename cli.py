@@ -5,22 +5,31 @@ import csv
 from urllib3.exceptions import InsecureRequestWarning
 
 
+import requests
+import yaml
+import argparse
+import csv
+from urllib3.exceptions import InsecureRequestWarning
+
 class APIClient:
     def __init__(self, config_path):
         try:
             with open(config_path, 'r') as file:
                 config = yaml.safe_load(file)
-            
-            self.base_url    = config['aap_url']
-            self.verify_ssl  = config['verify_ssl']
-            self.report_path = config.get('report_path', '') 
 
-            self.username = config['username']
-            self.password = config['password']
+            self.base_url = config['aap_url']
+            self.verify_ssl = config['verify_ssl']
+            self.report_path = config.get('report_path', '') 
+            self.token = config['token']
+
+            # Create a session object
+            self.session = requests.Session()
+            self.session.headers.update({'Authorization': f'Bearer {self.token}'})  # Set token in session headers
+            self.session.verify = self.verify_ssl  # Set SSL verification
 
         except FileNotFoundError:
             print(f"Error: The file '{config_path}' was not found.")
-            exit(1)  # Exit the program
+            exit(1)
         except yaml.YAMLError as e:
             print(f"Error parsing YAML in '{config_path}': {e}")
             exit(1)
@@ -31,7 +40,7 @@ class APIClient:
             print(f"An unexpected error occurred: {e}")
             exit(1)
 
-    def count_hosts_and_statuses(self, log_content):
+    def count_hosts_and_statuses(self, log_content, job_id):
         host_status_counts = {
             'total_hosts': 0,
             'total_unreachable': 0,
@@ -40,13 +49,17 @@ class APIClient:
         }
         lines = log_content.split('\n')
 
+        # Check if the log contains any hosts
+        if lines == ['']:
+            print(f"The log is empty: {job_id}")
+
         if not any("PLAY RECAP" in line for line in lines):
-            print("No hosts found in the log.")
-            return {}
+            print(f"No hosts found in the log: {job_id}")
+            pass
 
         for line in lines:
             # Check for lines indicating host status
-            if 'fatal=' in line or 'changed=' in line or 'ok=' in line:
+            if 'changed=' in line or 'ok=' in line or 'unreachable=' in line or 'failed=' in line or 'ignored=' in line or 'skipped=' in line or 'rescued=' in line:
                 host_status_counts['total_hosts'] += 1
                 if 'unreachable=' in line:
                     host_status_counts['total_unreachable'] += 1
@@ -69,19 +82,30 @@ class APIClient:
                 pages = '/api/v2/jobs?page_size=100'
 
             url = f'{self.base_url}/{pages}'
-            response = requests.get(url, auth=(self.username, self.password), verify=self.verify_ssl)
+            response = self.session.get(url)
             data = response.json()
 
             for job in data['results']:
+                if job['status'] == 'canceled':
+                    results.append({'name': job['name'], 
+                                    'total_hosts': 0,
+                                    'success': 0, 
+                                    'total_unreachable': 0, 
+                                    'total_failed': 0, 
+                                    'id': job['id'], 
+                                    'cancelled': 'true'})
+                    continue
+
                 job_stdout_url = f'{self.base_url}/api/v2/jobs/{job["id"]}/stdout/?format=txt'
-                job_response = requests.get(job_stdout_url, auth=(self.username,self.password), verify=self.verify_ssl)
-                count = self.count_hosts_and_statuses(job_response.text)
+                job_response = self.session.get(job_stdout_url)
+                count = self.count_hosts_and_statuses(job_response.text, job['id'])
 
                 if count:  # Skip jobs with no hosts
                     count['name'] = job['name']
                     count['id'] = job['id']
+                    count['cancelled'] = 'false'
                     results.append(count)
-                    print(count)
+                print(count)
 
             pages = data['next']
 
@@ -99,7 +123,7 @@ class ReportGenerator:
         # Use self.report_path to determine the full path
         full_file_path = f'{self.report_path}/{file_name}' if self.report_path else file_name
 
-        headers = ['Name', 'total_hosts', 'success', 'total_unreachable', 'total_failed','job_id']
+        headers = ['Name', 'total_hosts', 'success', 'total_unreachable', 'total_failed','job_id','cancelled','aap_cleanup']
         with open(full_file_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)
