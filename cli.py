@@ -41,10 +41,13 @@ class APIClient:
             exit(1)
 
     def count_hosts_and_statuses(self, log_content, job):
+        time = job['finished'].split('T')
         host_status_counts = {
 
             'id': job['id'], 
             'name': job['name'], 
+            'date': time[0],
+            'time': time[1][:8],
             'total_hosts': 0,
             'success': 0, 
             'unreachable': 0, 
@@ -52,18 +55,21 @@ class APIClient:
             'skipped': 0,
             'rescued': 0,
             'ignored': 0,
-            'canceled': 'false'
+            'canceled': 'false',
+            'playbook_failed': 'false',
+            'ansible_failed': 'false'
         }
 
         lines = log_content.split('\n')
 
         # Check if the log contains any hosts
         if lines == ['']:
-            print(f"The log is empty: {job['id']}")
+            host_status_counts['playbook_failed'] = 'true'
+            return host_status_counts
 
         if not any("PLAY RECAP" in line for line in lines):
-            print(f"No hosts found in the log: {job['id']}")
-            pass
+            host_status_counts['ansible_failed'] = 'true'
+            return host_status_counts
 
         for line in lines:
             # Check for lines indicating host status
@@ -112,10 +118,13 @@ class APIClient:
             data = response.json()
 
             for job in data['results']:
+                time = job['finished'].split('T')
                 if job['status'] == 'canceled':
                     results.append({
                                     'id': job['id'], 
                                     'name': job['name'], 
+                                    'date': time[0],
+                                    'time': time[1][:8],
                                     'total_hosts': 0,
                                     'success': 0, 
                                     'unreachable': 0, 
@@ -123,7 +132,10 @@ class APIClient:
                                     'skipped': 0,
                                     'rescued': 0,
                                     'ignored': 0,
-                                    'canceled': 'true'})
+                                    'canceled': 'true',
+                                    'playbook_failed': 'false',
+                                    'ansible_failed': 'false'
+                                    })
                     print(f"Job {job['id']} was canceled.")
                     continue
 
@@ -151,13 +163,13 @@ class ReportGenerator:
         # Use self.report_path to determine the full path
         full_file_path = f'{self.report_path}/{file_name}' if self.report_path else file_name
 
-        headers = ['ID','Name', 'total_hosts', 'success', 'unreachable', 'failed','skipped','rescued','ignored','canceled']
+        headers = ['ID','Name', 'Date','Time', 'total_hosts', 'success', 'unreachable', 'failed','skipped','rescued','ignored','canceled','playbook_failed','ansible_failed']
         with open(full_file_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)
 
             for job in self.data:
-                row = [job['id'], job['name'], job['total_hosts'], job['success'], job['unreachable'], job['failed'], job['skipped'], job['rescued'], job['ignored'],'canceled']
+                row = [job['id'], job['name'], job['date'], job['time'], job['total_hosts'], job['success'], job['unreachable'], job['failed'], job['skipped'], job['rescued'], job['ignored'],job['canceled'], job['playbook_failed'], job['ansible_failed']]
                 writer.writerow(row)
 
         print(f"Report generated: {full_file_path}")
