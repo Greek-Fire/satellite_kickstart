@@ -40,35 +40,61 @@ class APIClient:
             print(f"An unexpected error occurred: {e}")
             exit(1)
 
-    def count_hosts_and_statuses(self, log_content, job_id):
+    def count_hosts_and_statuses(self, log_content, job):
         host_status_counts = {
+
+            'id': job['id'], 
+            'name': job['name'], 
             'total_hosts': 0,
-            'total_unreachable': 0,
-            'total_failed': 0,
-            'success': 0
+            'success': 0, 
+            'unreachable': 0, 
+            'failed': 0,
+            'skipped': 0,
+            'rescued': 0,
+            'ignored': 0,
+            'canceled': 'false'
         }
+
         lines = log_content.split('\n')
 
         # Check if the log contains any hosts
         if lines == ['']:
-            print(f"The log is empty: {job_id}")
+            print(f"The log is empty: {job['id']}")
 
         if not any("PLAY RECAP" in line for line in lines):
-            print(f"No hosts found in the log: {job_id}")
+            print(f"No hosts found in the log: {job['id']}")
             pass
 
         for line in lines:
             # Check for lines indicating host status
             if 'changed=' in line or 'ok=' in line or 'unreachable=' in line or 'failed=' in line or 'ignored=' in line or 'skipped=' in line or 'rescued=' in line:
                 host_status_counts['total_hosts'] += 1
-                if 'unreachable=' in line:
-                    host_status_counts['total_unreachable'] += 1
-                elif 'failed=' in line and not 'failed=0' in line:
-                    host_status_counts['total_failed'] += 1
 
-        # Calculating hosts not unreachable or failed
-        host_status_counts['success'] = \
-            host_status_counts['total_hosts'] - host_status_counts['total_unreachable'] - host_status_counts['total_failed']
+                # Extract values for ok, unreachable, and failed
+                ok_count = int(line.split('ok=')[1].split()[0])
+                unreachable_count = int(line.split('unreachable=')[1].split()[0])
+                failed_count  = int(line.split('failed=')[1].split()[0])
+                skipped_count = int(line.split('skipped=')[1].split()[0])
+                rescued_count = int(line.split('rescued=')[1].split()[0])
+                ignored_count = int(line.split('ignored=')[1].split()[0])
+
+                if unreachable_count > 0:
+                    host_status_counts['unreachable'] += 1
+
+                if failed_count > 0:
+                    host_status_counts['failed'] += 1
+
+                if ok_count > 0 and unreachable_count == 0 and failed_count == 0:
+                    host_status_counts['success'] += 1
+
+                if ok_count == 0 and unreachable_count == 0 and failed_count == 0 and skipped_count > 0:
+                    host_status_counts['skipped'] += 1
+
+                if rescued_count > 0:
+                    host_status_counts['rescued'] += 1
+
+                if ignored_count > 0:
+                    host_status_counts['ignored'] += 1
 
         return host_status_counts
 
@@ -87,25 +113,27 @@ class APIClient:
 
             for job in data['results']:
                 if job['status'] == 'canceled':
-                    results.append({'name': job['name'], 
+                    results.append({
+                                    'id': job['id'], 
+                                    'name': job['name'], 
                                     'total_hosts': 0,
                                     'success': 0, 
-                                    'total_unreachable': 0, 
-                                    'total_failed': 0, 
-                                    'id': job['id'], 
-                                    'cancelled': 'true'})
+                                    'unreachable': 0, 
+                                    'failed': 0,
+                                    'skipped': 0,
+                                    'rescued': 0,
+                                    'ignored': 0,
+                                    'canceled': 'true'})
+                    print(f"Job {job['id']} was canceled.")
                     continue
 
                 job_stdout_url = f'{self.base_url}/api/v2/jobs/{job["id"]}/stdout/?format=txt'
                 job_response = self.session.get(job_stdout_url)
-                count = self.count_hosts_and_statuses(job_response.text, job['id'])
+                count = self.count_hosts_and_statuses(job_response.text, job)
 
                 if count:  # Skip jobs with no hosts
-                    count['name'] = job['name']
-                    count['id'] = job['id']
-                    count['cancelled'] = 'false'
                     results.append(count)
-                print(count)
+                    print(count)
 
             pages = data['next']
 
@@ -123,13 +151,13 @@ class ReportGenerator:
         # Use self.report_path to determine the full path
         full_file_path = f'{self.report_path}/{file_name}' if self.report_path else file_name
 
-        headers = ['Name', 'total_hosts', 'success', 'total_unreachable', 'total_failed','job_id','cancelled','aap_cleanup']
+        headers = ['ID','Name', 'total_hosts', 'success', 'unreachable', 'failed','skipped','rescued','ignored','canceled']
         with open(full_file_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)
 
             for job in self.data:
-                row = [job['name'], job['total_hosts'], job['success'], job['total_unreachable'], job['total_failed'], job['id']]
+                row = [job['id'], job['name'], job['total_hosts'], job['success'], job['unreachable'], job['failed'], job['skipped'], job['rescued'], job['ignored'],'canceled']
                 writer.writerow(row)
 
         print(f"Report generated: {full_file_path}")
