@@ -19,7 +19,7 @@ class APIClient:
 
             self.base_url = config['aap_url']
             self.verify_ssl = config['verify_ssl']
-            self.report_path = config.get('report_path', '') 
+            self.report_path = config.get('report_path', 'report.csv') 
             self.token = config['token']
 
             # Create a session object
@@ -56,7 +56,8 @@ class APIClient:
             'rescued': 0,
             'ignored': 0,
             'canceled': 'false',
-            'playbook_failed': 'false',
+            'inventory_failed': 'false',
+            'project_failed': 'false',
             'ansible_failed': 'false'
         }
 
@@ -64,7 +65,9 @@ class APIClient:
 
         # Check if the log contains any hosts
         if lines == ['']:
-            host_status_counts['playbook_failed'] = 'true'
+            host_status_counts['inventory_failed'] = "inventory_update" in job['job_explanation']
+            host_status_counts['project_failed'] = "project_update" in job['job_explanation']
+            print(job['id'], job['job_explanation'])
             return host_status_counts
 
         if not any("PLAY RECAP" in line for line in lines):
@@ -133,10 +136,10 @@ class APIClient:
                                     'rescued': 0,
                                     'ignored': 0,
                                     'canceled': 'true',
-                                    'playbook_failed': 'false',
+                                    'inventory_failed': 'false',
+                                    'project_failed': 'false',
                                     'ansible_failed': 'false'
                                     })
-                    print(f"Job {job['id']} was canceled.")
                     continue
 
                 job_stdout_url = f'{self.base_url}/api/v2/jobs/{job["id"]}/stdout/?format=txt'
@@ -145,7 +148,7 @@ class APIClient:
 
                 if count:  # Skip jobs with no hosts
                     results.append(count)
-                    print(count)
+                    #print(count)
 
             pages = data['next']
 
@@ -159,17 +162,17 @@ class ReportGenerator:
         self.data = data
         self.report_path = report_path
 
-    def generate_report(self, file_name='report.csv'):
+    def generate_report(self):
         # Use self.report_path to determine the full path
-        full_file_path = f'{self.report_path}/{file_name}' if self.report_path else file_name
+        full_file_path = f'{self.report_path}'
 
-        headers = ['ID','Name', 'Date','Time', 'total_hosts', 'success', 'unreachable', 'failed','skipped','rescued','ignored','canceled','playbook_failed','ansible_failed']
+        headers = ['ID','Name', 'Date','Time', 'total_hosts', 'success', 'unreachable', 'failed','skipped','rescued','ignored','canceled','inventory_failed','project_failed','ansible_failed']
         with open(full_file_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)
 
             for job in self.data:
-                row = [job['id'], job['name'], job['date'], job['time'], job['total_hosts'], job['success'], job['unreachable'], job['failed'], job['skipped'], job['rescued'], job['ignored'],job['canceled'], job['playbook_failed'], job['ansible_failed']]
+                row = [job['id'], job['name'], job['date'], job['time'], job['total_hosts'], job['success'], job['unreachable'], job['failed'], job['skipped'], job['rescued'], job['ignored'],job['canceled'], job['inventory_failed'], job['project_failed'], job['ansible_failed']]
                 writer.writerow(row)
 
         print(f"Report generated: {full_file_path}")
