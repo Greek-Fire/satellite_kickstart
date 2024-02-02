@@ -1,0 +1,8 @@
+export VMWARE_HOST=vcenter.lou.land
+export VMWARE_USER=administrator@lou.land
+export VMWARE_PASSWORD="Gr33k*G0d7"
+export VMWARE_VALIDATE_CERTS=false
+export GOVC_URL=https://vcenter.lou.land
+export GOVC_USERNAME=administrator@lou.land
+export GOVC_PASSWORD="Gr33k*G0d7"
+export GOVC_INSECURE=true

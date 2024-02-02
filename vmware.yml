@@ -1,0 +1,170 @@
+---
+- name: Deploy VM from OVF and configure IP
+  hosts: localhost
+  gather_facts: no
+  vars:
+    vcenter_hostname: vcenter.lou.land
+    vcenter_username: administrator@lou.land
+    vcenter_password: "Greek*G0d7"
+    #datacenter: "TNDC"
+    #cluster_name: "TNCL"
+    #datastore_name: "cloud (1)"
+    #content_library_name: 00-main #-tncl
+    #ovf_template_name: "autobuildrh7.lou.land"
+    #network_name: "VM Network"
+    name: "ansible-test3"
+    location: hallas
+    organization: hallas
+    vm_ip: 192.168.2.49
+    #cluster_name: 'TNCL'
+    #network_name: 'VM Network'
+    folder_name: test_folder
+    subnet: 192.168.2.0
+    operating_system: RH7
+    #gateway: 192.168.2.1
+    build: false
+
+  tasks:
+  - name: Create a VMware host in Satellite with EFI firmware and specific provisioning
+    redhat.satellite.subnet_info:
+      username: "{{ satellite_username | default(omit) }}"
+      password: "{{ satellite_password | default(omit) }}"
+      server_url: "{{ satellite_server_url | default(omit) }}"
+      validate_certs: "{{ satellite_validate_certs | default(omit) }}"
+      name: "{{ subnet }}"
+    register: subnet_info
+
+  - name: Collect OS Level Facts
+    uri:
+      url: "{{ satellite_server_url }}/api/operatingsystems?search=name~{{ operating_system }}"
+      method: GET
+      user: "{{ satellite_username }}"
+      password: "{{ satellite_password }}"
+      force_basic_auth: yes
+      validate_certs: false
+      return_content: yes
+    register: os_info
+
+  - name: Collect OS parameters
+    uri:
+      url: "{{ satellite_server_url }}/api/operatingsystems/{{ os_id }}"
+      method: GET
+      user: "{{ satellite_username }}"
+      password: "{{ satellite_password }}"
+      force_basic_auth: yes
+      validate_certs: false
+      return_content: yes
+    register: os_parameters
+    vars:
+      os_id: "{{ os_info['json']['results'][0]['id'] }}"
+
+  - name: Set vm guest facts.
+    set_fact:
+      source_vm_name: "{{ (os_parameters['json']['parameters'] | selectattr('name','eq','vm_template') | first)['value'] }}"
+      folder_name: "{{ folder_name | default('ansible_test') }}"
+      vm_name: "{{ name }}"
+      network_name: "{{ (subnet_info['subnet']['parameters'] | selectattr('name','eq','network') | first )['value'] }}"
+      cluster_name: "{{ (subnet_info['subnet']['parameters'] | selectattr('name','eq','cluster') | first )['value'] }}"
+      datastore_name: "{{ (subnet_info['subnet']['parameters'] | selectattr('name','eq','datastore') | first )['value'] }}"
+      
+  - name: Build a list of all the folders with the type VIRTUAL_MACHINE and called vm
+    vmware.vmware_rest.vcenter_folder_info:
+      filter_type: VIRTUAL_MACHINE
+      filter_names:
+      - "{{ folder_name }}"
+    register: my_folders
+    when: vm_id is not defined
+
+  - name: Retrieve details about the VM template
+    vmware.vmware_rest.vcenter_vm_info:
+      filter_names:
+      - "{{ source_vm_name }}"
+    register: source_vm_info
+    when: vm_id is not defined
+
+  - name: Build a list of all the datastores
+    vmware.vmware_rest.vcenter_datastore_info:
+    when: vm_id is not defined
+    register: all_the_datastores
+
+  - name: Retrieve details about the first cluster
+    vmware.vmware_rest.vcenter_cluster_info:
+    register: all_clusters_info
+    when: vm_id is not defined
+
+  - name: Get the network id
+    vmware.vmware_rest.vcenter_network_info:
+    register: net_info
+
+  - name: Get the network id
+    set_fact:
+      network_id: "{{ (net_info['value'] | selectattr('name','search','(?i)'+network_name) | first)['network'] }}"
+      network_type: "{{ (net_info['value'] | selectattr('name','search','(?i)'+network_name) | first)['type'] }}"
+
+  - name: Get the datastore id
+    set_fact:
+      datastore_id: "{{ (all_the_datastores['value'] | selectattr('name','eq',datastore_name) | first)['datastore'] }}"
+    when: vm_id is not defined
+
+  - name: Get the cluster id
+    set_fact:
+      cluster_id: "{{ (all_clusters_info['value'] | selectattr('name','search','(?i)'+cluster_name) | first)['cluster'] }}"
+    when: vm_id is not defined
+
+  - name: grab content library item id
+    set_fact:
+      source_vm_id: "{{ (source_vm_info['value'] | selectattr('name','search','(?i)'+source_vm_name) | first)['vm'] }}"
+    when: vm_id is not defined
+
+  - name: Get the folder id
+    set_fact:
+      folder_id: "{{ (my_folders['value'] | selectattr('name','eq', folder_name) | first)['folder'] }}"
+    when: vm_id is not defined
+
+  - name: Deploy a new VM based on the template
+    vmware.vmware_rest.vcenter_vm:
+      source: '{{ source_vm_id }}'
+      session_timeout: 10000
+      state: clone
+      name: "{{ vm_name }}"
+      guest_customization_spec:
+        name: rhel
+      placement:
+        cluster: "{{ cluster_id }}"
+        folder: "{{ folder_id }}"
+        datastore: "{{ datastore_id }}"
+      nics:
+      - type: VMXNET3
+        start_connected: true
+        backing:
+          type: "{{ network_type }}"
+          network: "{{ network_id }}"
+    register: new_vm
+    when: vm_id is not defined
+
+  - set_fact:
+      vm_id: "{{ new_vm['value'] }}"
+    when: vm_id is not defined
+  
+  - name: customize vm
+    tags: 
+    - customization
+    vmware.vmware_rest.vcenter_vm_guest_customization:
+      vm: "{{ vm_id }}"
+      configuration_spec:
+        linux_config:
+          domain: lou.land
+          hostname:
+            type: FIXED
+            fixed_name: "{{ vm_name }}"
+      interfaces:
+      - adapter:
+          ipv4:
+            ip_addres: "{{ vm_ip }}"
+            type: STATIC
+            gateways:
+            - 192.168.2.1
+            prefix: 24
+      global_DNS_settings:
+        dns_servers:
+        - 192.168.2.21
