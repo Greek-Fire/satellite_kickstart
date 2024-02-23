@@ -131,6 +131,19 @@ rm -f /root/first-boot.sh
 rm -rf /root/*
 rm -f /root/.bash_history
 
+# Path to the SSH directory
+SSH_DIR="/etc/ssh"
+
+# Remove SSH host keys
+rm -f $SSH_DIR/ssh_host_*_key $SSH_DIR/ssh_host_*_key.pub
+
+# Check for errors
+if [ $? -ne 0 ]; then
+  echo "Failed to remove SSH host keys"
+else
+  echo "SSH host keys removed successfully"
+fi
+
 poweroff
 EOF
 
