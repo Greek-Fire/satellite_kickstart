@@ -20,7 +20,6 @@ SSH_DIR="/etc/ssh"
 # Generate new SSH host keys
 ssh-keygen -t rsa -b 4096 -f $SSH_DIR/ssh_host_rsa_key -N ''
 ssh-keygen -t ecdsa -b 256 -f $SSH_DIR/ssh_host_ecdsa_key -N ''
-ssh-keygen -t ed25519 -f $SSH_DIR/ssh_host_ed25519_key -N ''
 
 # Set correct permissions for new keys
 chmod 600 $SSH_DIR/ssh_host_*_key
