@@ -5,6 +5,55 @@ model: ProvisioningTemplate
 description: |
   Script used to scrub VM to become template
 -%>
+###
+
+cat <<'EOF' >/root/prod-boot.sh
+{% raw %}
+#!/bin/bash
+
+# Redirect stdout and stderr to a log file for debugging
+exec > /tmp/prod-boot.log 2>&1
+
+# Path to the SSH directory
+SSH_DIR="/etc/ssh"
+
+# Generate new SSH host keys
+ssh-keygen -t rsa -b 4096 -f $SSH_DIR/ssh_host_rsa_key -N ''
+ssh-keygen -t ecdsa -b 256 -f $SSH_DIR/ssh_host_ecdsa_key -N ''
+
+# Set correct permissions for new keys
+chmod 600 $SSH_DIR/ssh_host_*_key
+chmod 644 $SSH_DIR/ssh_host_*_key.pub
+
+# Restart SSH service to apply changes
+systemctl restart sshd
+
+# Remove the systemd service for this script
+systemctl disable first-boot.service
+rm -f /etc/systemd/system/prod-boot.service
+rm -f /root/prod-boot.sh
+
+EOF
+
+chmod 645 /root/prod-boot.sh
+
+# Create the systemd service file for the prod-boot script
+cat <<'EOF' >/etc/systemd/system/prod-boot.service
+[Unit]
+Description=Run a script at prod boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /root/prod-boot.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable the systemd service to run at first boot
+{% endraw %}
 
 cat <<'EOF' >/root/first-boot.sh
 {% raw %}
@@ -130,6 +179,21 @@ rm -f /root/first-boot.sh
 # Clean out /root
 rm -rf /root/*
 rm -f /root/.bash_history
+
+# Path to the SSH directory
+SSH_DIR="/etc/ssh"
+
+# Remove SSH host keys
+rm -f $SSH_DIR/ssh_host_*_key $SSH_DIR/ssh_host_*_key.pub
+
+# Check for errors
+if [ $? -ne 0 ]; then
+  echo "Failed to remove SSH host keys"
+else
+  echo "SSH host keys removed successfully"
+fi
+
+systemctl enable prod-boot.service
 
 poweroff
 EOF
