@@ -36,7 +36,7 @@ satellite_partition_table:
   - hallas
   locations:
   - hallas
-  layout: "{{ lookup('template', 'disa_stig_kickstart_disk_layout.erb.j2') }}"
+  layout: "{{ lookup('template', 'compliance_disa_stig_kickstart_disk_layout.erb.j2') }}"
   os_family: Redhat
 
 isos_to_mount:
