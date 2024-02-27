@@ -31,12 +31,12 @@ satellite_locations:
     value: TNDC-Cluster
 
 satellite_partition_table:
-- name: Compliance DISA STIG Disk Layout
+- name: Compliance Kickstart Disk Layout
   organizations:
   - hallas
   locations:
   - hallas
-  layout: "{{ lookup('template', 'compliance_disa_stig_kickstart_disk_layout.erb.j2') }}"
+  layout: "{{ lookup('template', 'compliance_kickstart_disk_layout.erb.j2') }}"
   os_family: Redhat
 
 isos_to_mount:
