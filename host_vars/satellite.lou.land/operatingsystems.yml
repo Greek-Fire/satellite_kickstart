@@ -5,7 +5,7 @@ satellite_operatingsystems:
   os_family: "Redhat"
   password_hash: SHA256
   architectures: x86_64
-  ptables: Compliance STIG Kickstart Disk Layout
+  ptables: Compliance Kickstart Disk Layout
   default_templates:
   - template_kind: "provision"
     provisioning_template: "Compliance Kickstart default"
@@ -31,7 +31,7 @@ satellite_operatingsystems:
   os_family: "Redhat"
   password_hash: "SHA256"
   architectures: "x86_64"
-  ptables: "Compliance STIG Kickstart Disk Layout"
+  ptables: Compliance Kickstart Disk Layout
   default_templates:
   - template_kind: "provision"
     provisioning_template: "Compliance Kickstart default"
@@ -57,7 +57,7 @@ satellite_operatingsystems:
   os_family: "Redhat"
   password_hash: "SHA256"
   architectures: "x86_64"
-  ptables: "Compliance STIG Kickstart Disk Layout"
+  ptables: Compliance Kickstart Disk Layout
   media: OracleLinux8.7
   default_templates:
   - template_kind: "provision"
@@ -84,7 +84,7 @@ satellite_operatingsystems:
   os_family: "Redhat"
   password_hash: "SHA256"
   architectures: "x86_64"
-  ptables: "Compliance STIG Kickstart Disk Layout"
+  ptables: Compliance Kickstart Disk Layout
   media: OracleLinux7.9
   default_templates:
   - template_kind: "provision"
@@ -111,7 +111,7 @@ satellite_operatingsystems:
   os_family: "Redhat"
   password_hash: "SHA256"
   architectures: "x86_64"
-  ptables: "Compliance STIG Kickstart Disk Layout"
+  ptables: Compliance Kickstart Disk Layout
   media: "OracleLinux6.9"
   default_templates:
   - template_kind: "provision"
