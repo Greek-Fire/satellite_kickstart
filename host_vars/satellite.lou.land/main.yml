@@ -31,7 +31,7 @@ satellite_locations:
     value: TNDC-Cluster
 
 satellite_partition_table:
-- name: Compliance STIG Disk Layout
+- name: Compliance DISA STIG Disk Layout
   organizations:
   - hallas
   locations:

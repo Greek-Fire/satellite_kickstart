@@ -1,6 +1,6 @@
 <%#
 kind: ptable
-name: DISA STIG Disk Layout
+name: Compliance DISA STIG Disk Layout
 model: Ptable
 oses:
 - RedHat
@@ -38,7 +38,7 @@ part pv.01 --fstype="lvmpv"         --ondisk=<%= dev %> --size=1 --grow
 volgroup <%= vgname %> pv.01
 
 # Logical volumes
-logvol /              --vgname=<%= vgname %> --name=lv_root          --size=<%= root_size %>          --grow --fstype="<%= fstype %>" --fsoptions="nodev"
+logvol /              --vgname=<%= vgname %> --name=lv_root          --size=<%= root_size %>          --fstype="<%= fstype %>" --fsoptions="nodev"
 logvol /var           --vgname=<%= vgname %> --name=lv_var           --size=<%= var_size %>           --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
 logvol /opt           --vgname=<%= vgname %> --name=lv_opt           --size=<%= opt_size %>           --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
 logvol /var/log       --vgname=<%= vgname %> --name=lv_var_log       --size=<%= var_log_size %>       --fstype="<%= fstype %>" --fsoptions="nodev,nosuid"
